@@ -13,6 +13,18 @@ A comprehensive Claude Code harness that codifies enterprise software delivery p
 | Hooks | 4 | Pre/post-tool-use validation gates |
 | Patterns | 1 | Reusable cloud architecture reference patterns |
 
+## Guides
+
+Deeper reference for each category, beyond the summary tables below:
+
+| Guide | Covers |
+|-------|--------|
+| [AGENTS-GUIDE.md](AGENTS-GUIDE.md) | How to invoke each agent, what it needs, what it produces, and what good output looks like |
+| [COMMANDS-GUIDE.md](COMMANDS-GUIDE.md) | How to invoke each slash command and which agent(s)/skill(s) it drives |
+| [HOOKS-GUIDE.md](HOOKS-GUIDE.md) | What each guardrail checks, when it fires, and how to respond |
+| [RULES-GUIDE.md](RULES-GUIDE.md) | What each standing rule enforces and where it applies |
+| [SKILLS-GUIDE.md](SKILLS-GUIDE.md) | What each skill's workflow does and who loads it |
+
 ## Getting Started
 
 ### Prerequisites
@@ -29,7 +41,7 @@ cd sdlc-plus
 
 Open the project in your IDE or start Claude Code in the terminal. The harness configuration in `.claude/` is automatically loaded.
 
-If this `.claude/` folder was copied into a different project (rather than cloned as this repo), run `/init-project` first — it bootstraps the required `docs/` structure, generates `CLAUDE.md`, wires up the hooks in `.claude/settings.json`, and sets up `.gitignore`. It's idempotent, so it's safe to re-run any time you pull in a newer copy of `.claude/`.
+If this `.claude/` folder was copied into a different project (rather than cloned as this repo), run `/init-sdlc` first — it bootstraps the required `docs/` structure, generates `CLAUDE.md`, wires up the hooks in `.claude/settings.json`, and sets up `.gitignore`. It's idempotent, so it's safe to re-run any time you pull in a newer copy of `.claude/`.
 
 ### Quick Start
 
@@ -57,7 +69,7 @@ Slash commands that orchestrate multi-agent workflows.
 
 | Command | Description |
 |---------|-------------|
-| `/init-project` | Bootstrap a project that received `.claude/` by copy: settings, `.gitignore`, `CLAUDE.md`, required `docs/` structure |
+| `/init-sdlc` | Bootstrap a project that received `.claude/` by copy: settings, `.gitignore`, `CLAUDE.md`, required `docs/` structure |
 | `/new-feature` | Full feature lifecycle: requirements, HLD, LLD, code, tests, docs, governance |
 | `/review` | Code review against project standards, LLD, and security checklist |
 | `/release-gate` | Release governance checklist: DoD, defects, change requests, security scans |

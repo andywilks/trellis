@@ -23,7 +23,7 @@ allowed-tools:
 | API | REST-assured | All happy + error paths |
 | Unit (frontend) | Vitest + RTL | All components |
 | E2E | Playwright | Critical user journeys |
-| Performance | Gatling | p95 < 200ms at 100 rps |
+| Performance | JMeter | p95 < 200ms at 100 rps |
 
 ---
 

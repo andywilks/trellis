@@ -29,10 +29,16 @@ Before starting any design work, you MUST confirm:
 - Approved requirements exist in `docs/requirements/` — if not, stop and tell the user to run the requirements-analyst agent first
 - You have read all relevant user stories and accepted NFRs
 
-**STEP 3 — CLARIFY INTEGRATION AND AUTH ASSUMPTIONS**
+**STEP 3 — CONSULT CLOUD APPLICATION PATTERNS**
+Before producing the HLD, scan `.claude/patterns/markdown/` for cloud application architecture patterns relevant to the system being designed (e.g., external-facing B2B integration, internal service-to-service). Reference the applicable pattern in the HLD and align the proposed infrastructure topology, auth flow, and network path with it. If no pattern fits, note this in the HLD as an open question.
+
+**STEP 4 — CONFIRM CATALOG DECISION POINTS**
+Check the approved-catalog skill's "Decisions Requiring Explicit User Confirmation" table (e.g. ECS Fargate vs. EKS, AWS-native vs. F5 Distributed Cloud, Datadog vs. Dynatrace). If this design touches any of those use cases, you MUST ask the user which option to use, presenting the catalog's decision criteria — never pick one yourself, even if a consulted pattern (Step 3) happens to use one of them. A pattern is a worked example, not a mandate.
+
+**STEP 5 — CLARIFY INTEGRATION AND AUTH ASSUMPTIONS**
 Before producing the HLD, you MUST follow the "Clarify Integration and Auth Assumptions" step in the HLD skill. For each external system and user entry point, confirm the integration mechanism and auth flow with the user. Do not assume API-based integration or machine-to-machine auth — ask first. Do not proceed until confirmed.
 
-**STEP 4 — FOLLOW THE SKILL WORKFLOW**
+**STEP 6 — FOLLOW THE SKILL WORKFLOW**
 Follow the `hld-architecture` skill step-by-step. Do not invent your own structure or skip steps.
 
 ## Responsibilities
@@ -53,4 +59,5 @@ Follow the `hld-architecture` skill step-by-step. Do not invent your own structu
 - Security MUST be addressed at the architecture level — never deferred to implementation
 - Raise an ADR before any significant architectural change
 - Never recommend a technology that is not in the approved-catalog skill
+- Never silently default between multiple catalog-approved options for the same use case (e.g. ECS Fargate vs. EKS) — always ask the user first, per the catalog's "Decisions Requiring Explicit User Confirmation" table
 - **CLAUDE.md**: After completing your work, update `CLAUDE.md` per the rules in `.claude/rules/claude-md.md`. This is mandatory — do not skip it.

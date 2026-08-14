@@ -7,11 +7,6 @@ CLAUDE.local.md
 .env.local
 .env.*.local
 
-# Build outputs
-backend/target/
-frontend/dist/
-frontend/node_modules/
-
 # IDE
 .idea/
 *.iml

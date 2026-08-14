@@ -161,7 +161,7 @@ test.describe('User Registration', () => {
 ## Run All Tests
 ```bash
 # Backend
-cd backend && mvn verify
+cd backend && ./gradlew build
 
 # Frontend unit
 cd frontend && npm run test
@@ -170,6 +170,6 @@ cd frontend && npm run test
 cd frontend && npx playwright test
 
 # Coverage report
-cd backend && mvn jacoco:report
-open backend/target/site/jacoco/index.html
+cd backend && ./gradlew jacocoTestReport
+open backend/build/reports/jacoco/test/html/index.html
 ```

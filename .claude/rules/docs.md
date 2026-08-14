@@ -6,7 +6,7 @@ applyTo: "docs/**/*.md"
 
 ## Every Document Must Have
 - A title as an H1 heading
-- A date and status (Draft / In Review / Approved) in the header
+- A date and status (Draft / In Review / Reviewed / Approved) in the header
 - A clear statement of audience
 
 ## Formatting

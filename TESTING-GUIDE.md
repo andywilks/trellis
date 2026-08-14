@@ -8,44 +8,37 @@
 
 ## Before You Start
 
-**Set up your global layer first.**
-
-Move the agents, skills, commands, and rules into `~/.claude/`:
+**Copy the whole `.claude/` folder into your project.** This harness is project-scoped,
+not global — it does not live in `~/.claude/`. Copy the entire `.claude/` directory
+(agents, skills, commands, rules, hooks, patterns) from this repo into the root of the
+project you're testing against:
 
 ```powershell
 # Run once in PowerShell
-$src = "C:\path\to\claude-sdlc-project-v5\.claude"
-$dst = "$env:USERPROFILE\.claude"
+$src = "C:\path\to\sdlc-plus\.claude"
+$dst = "C:\path\to\your-project\.claude"
 
-New-Item -ItemType Directory -Force "$dst\agents","$dst\skills","$dst\commands","$dst\rules"
-
-Copy-Item "$src\agents\*"   "$dst\agents\"
-Copy-Item "$src\skills\*"   "$dst\skills\" -Recurse
-Copy-Item "$src\commands\*" "$dst\commands\"
-Copy-Item "$src\rules\*"    "$dst\rules\"
+Copy-Item $src $dst -Recurse
 ```
+
+**Bootstrap the project.** Open the target project in Claude Code and run:
+
+```
+/init-project
+```
+
+This invokes the `init-sdlc` skill, which is idempotent and safe to re-run any time you
+pull in a newer copy of `.claude/`. It creates the required `docs/` folder structure,
+generates `CLAUDE.md` from its own skeleton (do not hand-write one — see
+`.claude/rules/claude-md.md` for how agents keep it current as real decisions are made),
+wires the hooks into `.claude/settings.json`, creates an empty `.claude/settings.local.json`
+for your personal overrides, and adds the personal-file exclusions to `.gitignore`. It
+reports back what it created vs. what was already present.
 
 **Pick a real feature you know well** from an existing project — something with a database entity, a REST endpoint, business logic, and a UI component. Write down on paper what good output looks like at each stage before you start. That's your benchmark.
 
 **Open just your project** as the workspace root in VSCode. Not a workspace containing multiple folders — just the one project folder.
 
-**Add a minimal `CLAUDE.md`** to your project root. Do not add anything you don't already know — the agents will populate `docs/` as they work through each stage.
-
-**For e.g.**
-
-```
-# my-first-app
-
-## What This Project Is
-
-## Maintaining This File
-- When any agent or skill makes a decision about stack, architecture, repository layout, conventions, or build process, it MUST update the relevant section of this file in the same commit
-- Sections to keep current: Stack, Repository Layout, Build Commands, Key Design Decisions
-- When a new ADR is created, add a one-line summary with a link under Key Design Decisions
-- When a new technology is chosen via the approved-catalog, add it to Stack
-- When new modules or top-level directories are added, update Repository Layout
-- Never remove existing content without explicit user approval — only add or amend
-```
 ---
 
 ## Stage 1 — Requirements
@@ -74,7 +67,7 @@ Copy-Item "$src\rules\*"    "$dst\rules\"
 |---------|-----|
 | Skips clarifying questions | Strengthen the CRITICAL BEHAVIOUR section: add "DO NOT produce any output until you have received answers" |
 | Wrong file locations | Check output standards say MUST not should |
-| Skill not followed | Verify `~/.claude/skills/requirements-capture/SKILL.md` exists |
+| Skill not followed | Verify `.claude/skills/requirements-capture/SKILL.md` exists |
 | Single combined document | Add: "one file per story — never combine into a single file" |
 
 **Sign off when:** You could hand the output to a developer and they'd have no questions.
@@ -92,6 +85,8 @@ Copy-Item "$src\rules\*"    "$dst\rules\"
 - Read the requirements from `docs/requirements/` before designing anything
 - Load the `approved-catalog` skill and verify technology choices
 - Define deployment boundaries — command, query, and frontend as separate units
+- Scan `.claude/patterns/markdown/` for a matching cloud architecture pattern and reference it by name in the HLD — or note "no pattern fits" in Open Questions if none matches
+- Stop and ask before defaulting on any approved-catalog "Decisions Requiring Explicit User Confirmation" item (e.g. ECS Fargate vs. EKS, AWS-native vs. F5 Distributed Cloud, Datadog vs. Dynatrace) — never silently pick one, even if a consulted pattern happens to use one of them
 - Produce a Mermaid architecture diagram
 - Address security at the architecture level
 - Raise an ADR for any significant decision
@@ -102,6 +97,8 @@ Copy-Item "$src\rules\*"    "$dst\rules\"
 - Does the diagram reflect your actual stack and deployment units?
 - Did it flag security concerns?
 - Did it check the approved catalog before recommending anything?
+- Did it consult the patterns directory and reference a relevant pattern (or explicitly say none fits)?
+- Did it stop and ask you on any catalog decision point instead of silently defaulting?
 - Did it raise a boundary warning if command and query were conflated?
 - Is there anything technically wrong for your stack?
 
@@ -113,6 +110,8 @@ Copy-Item "$src\rules\*"    "$dst\rules\"
 | Recommends unapproved tech | Check catalog hook in settings.json is wired correctly |
 | Skips ADR | Make ADR creation mandatory, not optional |
 | Doesn't define deployment units | Strengthen STEP 3 in the agent |
+| Ignores the patterns directory | Strengthen the "Consult Cloud Application Patterns" step in the `hld-architecture` skill |
+| Silently defaults on a catalog decision point (e.g. picks ECS Fargate without asking) | Strengthen the "Confirm Catalog Decision Points" step — it must ask, never assume |
 
 **Sign off when:** A senior engineer could review the HLD with no major questions.
 
@@ -168,14 +167,14 @@ Copy-Item "$src\rules\*"    "$dst\rules\"
 - Use constructor injection everywhere — no `@Autowired` on fields
 - Write unit tests alongside each class, not after
 - Raise a boundary warning if any cross-component import is detected
-- Run `mvn verify` before declaring done
+- Run `./gradlew build` before declaring done
 - Report test results back to you
 
 **Judge it on:**
 - Did it follow the implementation order from the skill?
 - Is the code idiomatic Java 21 / Spring Boot 4.1?
 - Are unit tests written alongside — or missing entirely?
-- Does `mvn verify` actually pass?
+- Does `./gradlew build` actually pass?
 - Would you approve this in a code review?
 
 **If it goes wrong:**
@@ -185,9 +184,9 @@ Copy-Item "$src\rules\*"    "$dst\rules\"
 | Wrong implementation order | Feature-development skill not loading — check agent STEP 1 |
 | Field injection used | Add to `java.md`: "NEVER do this: `@Autowired private UserRepository repo`" |
 | No tests written | Add: "DO NOT move to the next class until the test for the current class passes" |
-| Doesn't run `mvn verify` | Make STEP 4 say "running `mvn verify` is non-negotiable" |
+| Doesn't run `./gradlew build` | Make STEP 4 say "running `./gradlew build` is non-negotiable" |
 
-**Sign off when:** `mvn verify` is green and you would approve it in a code review.
+**Sign off when:** `./gradlew build` is green and you would approve it in a code review.
 
 ---
 
@@ -262,7 +261,7 @@ Copy-Item "$src\rules\*"    "$dst\rules\"
 - Are Playwright tests querying by role and label?
 - Does the full suite pass at the coverage target?
 
-**Sign off when:** `mvn verify` and `npm run test` are green at the coverage target defined in the test strategy.
+**Sign off when:** `./gradlew build` and `npm run test` are green at the coverage target defined in the test strategy.
 
 ---
 
@@ -300,6 +299,11 @@ Then run the session yourself and fill in the debrief section of the charter.
 - State the audience at the top of every document
 
 **Sign off when:** Someone unfamiliar with the feature could call the API successfully using only the docs.
+
+**Utility note:** to hand any of these docs to someone as a PDF, ask Claude to "export
+this md as a PDF" against the file — e.g. the HLD or the API reference — which loads the
+`md-to-pdf` skill directly. It's a standalone conversion utility, not part of the agent
+pipeline, so it doesn't get its own stage here.
 
 ---
 

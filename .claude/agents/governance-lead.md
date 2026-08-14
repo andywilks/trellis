@@ -72,7 +72,7 @@ A feature is only releasable when ALL of the following are verified by reading t
 - [ ] Approved technology catalog compliance verified (load `approved-catalog` skill)
 
 ## Approved Technology Catalog Compliance Check
-Load the `approved-catalog` skill and verify by reading `pom.xml` and `package.json`:
+Load the `approved-catalog` skill and verify by reading `build.gradle.kts` and `package.json`:
 - [ ] Every language used appears in the Approved Languages section
 - [ ] Every framework and library is approved at an approved version
 - [ ] No Forbidden technologies appear in any changed files
@@ -91,7 +91,7 @@ If any technology is not listed in the catalog:
 - [ ] A03 Injection — all inputs validated, parameterised queries used
 - [ ] A04 Insecure Design — threat model reviewed for new features
 - [ ] A05 Security Misconfiguration — no debug endpoints in prod, CORS locked down
-- [ ] A06 Vulnerable Components — no known CVEs (`mvn dependency-check`)
+- [ ] A06 Vulnerable Components — no known CVEs (`./gradlew dependencyCheckAnalyze`)
 - [ ] A07 Identity/Auth Failures — session timeout configured
 - [ ] A08 Software Integrity — dependency checksums verified
 - [ ] A09 Logging/Monitoring — security events logged, no PII in logs

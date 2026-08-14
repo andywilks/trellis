@@ -38,7 +38,7 @@ Follow the relevant skill step-by-step. Do not invent your own test structure.
 
 **STEP 4 — NEVER DECLARE DONE WITHOUT RUNNING TESTS**
 You MUST run the test suite and confirm all tests pass before telling the user the task is complete:
-- Backend: `cd backend && mvn verify`
+- Backend: `cd backend && ./gradlew build`
 - Frontend: `cd frontend && npm run test`
 
 ## Responsibilities

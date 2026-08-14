@@ -27,7 +27,11 @@ Create `/docs/design/lld/LLD-{feature}.md`:
 **HLD Reference:** HLD-{feature}
 **Status:** Draft | In Review | Approved
 
-## 1. Class Diagram
+## 1. Build Configuration
+
+Include the proposed build file (e.g. `build.gradle.kts` for Java/Spring Boot, `package.json` for TypeScript/React) showing all plugins, dependencies, and their versions. This makes technology and version choices explicit and reviewable. Include a dependency version summary table showing which versions are pinned, which are BOM-managed, and their approved catalog status. All dependencies must comply with the approved-catalog skill.
+
+## 2. Class Diagram
 
 ```mermaid
 classDiagram
@@ -51,7 +55,7 @@ classDiagram
     UserRepository --> User
 ```
 
-## 2. Sequence Diagram
+## 3. Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -74,7 +78,7 @@ sequenceDiagram
     CT-->>C: 201 Created
 ```
 
-## 3. API Contract
+## 4. API Contract
 Summarise endpoints; full spec in `/docs/design/api/{resource}-api.yaml`.
 
 | Method | Path | Auth | Description |
@@ -82,7 +86,7 @@ Summarise endpoints; full spec in `/docs/design/api/{resource}-api.yaml`.
 | POST | /api/v1/users | None | Register new user |
 | GET | /api/v1/users/{id} | Bearer | Get user by ID |
 
-## 4. Database Schema
+## 5. Database Schema
 
 ```sql
 -- V2__create_users_table.sql
@@ -99,7 +103,7 @@ CREATE TABLE users (
 CREATE INDEX idx_users_email ON users(email);
 ```
 
-## 5. DTO Definitions
+## 6. DTO Definitions
 
 ```java
 // Request
@@ -120,7 +124,7 @@ public record UserResponse(
 ) {}
 ```
 
-## 6. Error Scenarios
+## 7. Error Scenarios
 | Scenario | HTTP Status | Error Code |
 |----------|-------------|------------|
 | Email already exists | 409 | USER_EMAIL_CONFLICT |

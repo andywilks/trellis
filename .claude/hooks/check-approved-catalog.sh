@@ -1,47 +1,71 @@
 #!/usr/bin/env bash
-# Pre-tool-use hook: flag edits to pom.xml or package.json that add new dependencies
+# Pre-tool-use hook: flag edits to build.gradle.kts or package.json that add new dependencies
 # Reminds agents to check the approved catalog before proceeding
 
 set -euo pipefail
 
 INPUT=$(cat)
-TOOL=$(echo "$INPUT" | jq -r '.tool // empty')
-FILE_PATH=$(echo "$INPUT" | jq -r '.path // empty')
-CONTENT=$(echo "$INPUT" | jq -r '.new_str // .content // empty')
 
-if [[ "$TOOL" != "Edit" && "$TOOL" != "Write" ]]; then
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "check-approved-catalog.sh: python3 not found on PATH, skipping catalog check" >&2
+  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}'
   exit 0
 fi
 
-# Check if editing dependency files
-if [[ "$FILE_PATH" =~ pom\.xml$ ]] || [[ "$FILE_PATH" =~ package\.json$ ]] || [[ "$FILE_PATH" =~ requirements\.txt$ ]]; then
+PYCODE=$(cat <<'PYEOF'
+import json
+import re
+import sys
 
-  # Check for forbidden patterns
-  FORBIDDEN_PATTERNS=(
-    "mongodb"
-    "mysql-connector"
-    "com\.oracle"
-    "undertow"
-    "angularjs"
-    "jquery"
-    "styled-components"
-    "cypress"
-    "gatling"
-    "selenium"
-  )
+data = json.load(sys.stdin)
+tool = data.get("tool_name", "")
 
-  for pattern in "${FORBIDDEN_PATTERNS[@]}"; do
-    if echo "$CONTENT" | grep -qi "$pattern"; then
-      echo "{\"decision\": \"deny\", \"message\": \"Dependency '$pattern' is in the Forbidden list of the approved technology catalog. Load the approved-catalog skill and choose an approved alternative.\"}"
-      exit 0
-    fi
-  done
+if tool not in ("Edit", "Write"):
+    sys.exit(0)
 
-  # Warn for any new dependency addition to prompt catalog check
-  if echo "$CONTENT" | grep -qiE "<dependency>|\"dependencies\"|\"devDependencies\""; then
-    echo "{\"decision\": \"ask\", \"message\": \"You are adding or modifying dependencies. Have you verified all additions against the approved-catalog skill? Forbidden technologies will be blocked.\"}"
-    exit 0
-  fi
-fi
+tool_input = data.get("tool_input", {})
+file_path = tool_input.get("file_path", "")
+content = tool_input.get("new_string") or tool_input.get("content") or ""
 
-echo '{"decision": "allow"}'
+if not re.search(r"(build\.gradle\.kts|package\.json|requirements\.txt)$", file_path):
+    sys.exit(0)
+
+forbidden_patterns = [
+    "mongodb",
+    "mysql-connector",
+    r"com\.oracle",
+    "undertow",
+    "angularjs",
+    "jquery",
+    "styled-components",
+    "cypress",
+    "gatling",
+    "selenium",
+]
+
+for pattern in forbidden_patterns:
+    if re.search(pattern, content, re.IGNORECASE):
+        print(json.dumps({
+            "hookSpecificOutput": {
+                "hookEventName": "PreToolUse",
+                "permissionDecision": "deny",
+                "permissionDecisionReason": f"Dependency '{pattern}' is in the Forbidden list of the approved technology catalog. Load the approved-catalog skill and choose an approved alternative.",
+            }
+        }))
+        sys.exit(0)
+
+if re.search(r"<dependency>|\"dependencies\"|\"devDependencies\"", content, re.IGNORECASE):
+    print(json.dumps({
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "ask",
+            "permissionDecisionReason": "You are adding or modifying dependencies. Have you verified all additions against the approved-catalog skill? Forbidden technologies will be blocked.",
+        }
+    }))
+    sys.exit(0)
+
+print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow"}}))
+PYEOF
+)
+
+echo "$INPUT" | python3 -c "$PYCODE"

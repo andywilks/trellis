@@ -1,42 +1,64 @@
 #!/usr/bin/env bash
-# Detects cross-boundary imports between backend and frontend modules.
-# Exits non-zero with a message if a violation is found.
+# PostToolUse hook: detect cross-boundary imports between backend and frontend.
+# Matcher: Write|Edit
 
-FILE="$1"
+set -euo pipefail
 
-if [ -z "$FILE" ]; then
+INPUT=$(cat)
+
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "check-boundary-imports.sh: python3 not found on PATH, skipping boundary check" >&2
   exit 0
 fi
 
-# Determine which module the edited file belongs to
-case "$FILE" in
-  backend/*)
-    # Backend Java/Kotlin files must not reference frontend paths
-    if grep -qEi '(from ["\x27].*frontend|import.*frontend|require.*frontend|\.\./frontend)' "$FILE" 2>/dev/null; then
-      echo "BOUNDARY VIOLATION: $FILE contains a reference to the frontend module."
-      echo "Backend must be independently deployable — no cross-boundary imports allowed."
-      exit 1
-    fi
-    # Check for references to a shared/ or common/ directory (which should not exist)
-    if grep -qEi '(from ["\x27].*shared/|import.*shared\.|require.*shared/|\.\./shared)' "$FILE" 2>/dev/null; then
-      echo "BOUNDARY VIOLATION: $FILE references a shared/ module."
-      echo "No shared code between backend and frontend — use API contracts instead."
-      exit 1
-    fi
-    ;;
-  frontend/*)
-    # Frontend TS/JS files must not reference backend paths
-    if grep -qEi '(from ["\x27].*backend|import.*backend|require.*backend|\.\./backend)' "$FILE" 2>/dev/null; then
-      echo "BOUNDARY VIOLATION: $FILE contains a reference to the backend module."
-      echo "Frontend must be independently deployable — no cross-boundary imports allowed."
-      exit 1
-    fi
-    if grep -qEi '(from ["\x27].*shared/|import.*shared\.|require.*shared/|\.\./shared)' "$FILE" 2>/dev/null; then
-      echo "BOUNDARY VIOLATION: $FILE references a shared/ module."
-      echo "No shared code between backend and frontend — use API contracts instead."
-      exit 1
-    fi
-    ;;
-esac
+PYCODE=$(cat <<'PYEOF'
+import json
+import re
+import sys
+import os
 
-exit 0
+data = json.load(sys.stdin)
+tool_input = data.get("tool_input", {})
+tool_response = data.get("tool_response", {})
+file_path = tool_input.get("file_path") or tool_response.get("filePath") or ""
+
+if not file_path or not os.path.isfile(file_path):
+    sys.exit(0)
+
+with open(file_path, encoding="utf-8", errors="ignore") as f:
+    text = f.read()
+
+def check_violation(pattern, message):
+    if re.search(pattern, text, re.IGNORECASE):
+        print(json.dumps({
+            "decision": "block",
+            "reason": f"BOUNDARY VIOLATION: {file_path} — {message}",
+        }))
+        sys.exit(0)
+
+normalized = file_path.replace("\\", "/")
+
+if "/backend/" in normalized:
+    check_violation(
+        r"(from ['\"].*frontend|import.*frontend|require.*frontend|\.\./frontend)",
+        "Backend references frontend module. Backend must be independently deployable.",
+    )
+    check_violation(
+        r"(from ['\"].*shared/|import.*shared\.|require.*shared/|\.\./shared)",
+        "Backend references a shared/ module. Use API contracts instead.",
+    )
+elif "/frontend/" in normalized:
+    check_violation(
+        r"(from ['\"].*backend|import.*backend|require.*backend|\.\./backend)",
+        "Frontend references backend module. Frontend must be independently deployable.",
+    )
+    check_violation(
+        r"(from ['\"].*shared/|import.*shared\.|require.*shared/|\.\./shared)",
+        "Frontend references a shared/ module. Use API contracts instead.",
+    )
+
+sys.exit(0)
+PYEOF
+)
+
+echo "$INPUT" | python3 -c "$PYCODE"

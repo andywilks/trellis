@@ -53,8 +53,8 @@ Open http://localhost:3000
 ### Backend
 ```bash
 cd backend
-mvn clean install -DskipTests
-mvn spring-boot:run
+./gradlew build -x test
+./gradlew bootRun
 ```
 ### Frontend
 ```bash
@@ -65,7 +65,7 @@ npm run dev
 
 ## Running Tests
 ```bash
-cd backend && mvn verify          # unit + integration
+cd backend && ./gradlew build     # unit + integration
 cd frontend && npm run test       # unit
 cd frontend && npx playwright test  # e2e
 ```

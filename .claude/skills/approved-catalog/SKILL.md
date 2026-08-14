@@ -16,7 +16,7 @@ allowed-tools:
 
 **Maintained by:** Platform Engineering Team  
 **Review cycle:** Quarterly  
-**Last updated:** 2026-06-01  
+**Last updated:** 2026-08-14  
 **Governance:** Any addition, removal, or version change requires a Platform Engineering approval via the catalog change process (see bottom of this document).
 
 ---
@@ -28,8 +28,28 @@ allowed-tools:
 3. **If a technology is not listed** — do NOT use it; recommend the requester raises a catalog change request
 4. **If a technology is in the Forbidden section** — refuse to implement it and explain why
 5. **If uncertain** — flag it and ask rather than assuming approval
+6. **If more than one approved option exists for the same use case** — do NOT silently pick one. Ask the user, presenting the decision criteria from the relevant table (see "Decisions Requiring Explicit User Confirmation" below). Document the outcome — for architecture-level choices this means raising an ADR.
 
 The `governance-lead` agent checks catalog compliance as part of every DoD review and release gate.
+
+---
+
+## ⚠️ Decisions Requiring Explicit User Confirmation
+
+These are the points in this catalog where **more than one option is approved for the same use
+case** and the right choice depends on team/project context the catalog can't know in advance.
+Any agent that reaches one of these decisions (most commonly `solution-architect` during HLD work)
+MUST stop and ask the user rather than defaulting to one option — see the linked table for the
+full decision criteria.
+
+| Decision | Options | Criteria |
+|----------|---------|----------|
+| Container compute platform | ECS Fargate vs. EKS | See Cloud & Infrastructure → Approved AWS Services: choose per-workload based on Kubernetes-specific operational needs (existing K8s tooling, Helm charts, custom controllers/operators) vs. standard workloads with no such need |
+| Edge protection / multi-region failover | AWS-native (WAF + CloudFront + Route 53) vs. F5 Distributed Cloud | See Cloud & Infrastructure → Approved Third-Party / Non-AWS Services: driven by (1) whether F5 Distributed Cloud is already provisioned for the team's target region(s), and (2) workload maturity (POC/early-stage favours AWS-native to avoid an external team's SLA-bound lead time) |
+| Full-stack observability | Datadog vs. Dynatrace | See Observability → Approved: both cover APM/logs/metrics/infra monitoring; choose per existing team tooling/licensing, no catalog-mandated default |
+
+If a future catalog change introduces another use case with multiple approved options, add it to
+this table in the same change.
 
 ---
 
@@ -160,7 +180,8 @@ PostgreSQL remains the **default data store** for all relational and complex-sch
 
 | Service | Use Case | Rationale |
 |---------|----------|-----------|
-| ECS (Fargate) | Container workloads | Approved container runtime; Kubernetes via EKS requires separate approval |
+| ECS (Fargate) | Container workloads | Approved container runtime; suits standard workloads without dedicated Kubernetes operational needs |
+| EKS | Container workloads (Kubernetes) | Approved container runtime alongside ECS Fargate; choose per-workload based on Kubernetes-specific operational needs (e.g. existing Kubernetes tooling, Helm charts, custom controllers/operators) |
 | RDS (PostgreSQL) | Managed database | Preferred over self-managed |
 | ElastiCache (Redis) | Managed cache | Preferred over self-managed Redis |
 | DynamoDB | NoSQL key-value/document store | Approved for scoped use cases only (see Databases section); serverless, no capacity planning needed |
@@ -168,6 +189,8 @@ PostgreSQL remains the **default data store** for all relational and complex-sch
 | S3 | Object storage | Standard blob/file storage |
 | CloudFront | CDN | Approved for static asset delivery |
 | ALB | Load balancing | Application load balancer for HTTP/HTTPS |
+| Transit Gateway | Private cross-account/cross-VPC routing | Standard AWS backbone routing between accounts (e.g. Standard ↔ Trusted account patterns); avoids transit over the public internet |
+| AWS Network Firewall | Network-layer traffic inspection/filtering | Approved for filtering traffic crossing account/VPC boundaries, complementing WAF (application-layer) and Security Groups |
 | SQS | Async messaging | Approved for decoupled async workloads |
 | SNS | Pub/sub notifications | Approved for event fan-out |
 | Secrets Manager | Secret storage | **Mandatory** for all secrets; environment variables not permitted for secrets in production |
@@ -176,11 +199,21 @@ PostgreSQL remains the **default data store** for all relational and complex-sch
 | ACM | TLS certificates | Mandatory for all public endpoints |
 | WAF | Web application firewall | Required for all public-facing APIs |
 | GuardDuty | Threat detection | Continuous monitoring for malicious activity and unauthorised behaviour across AWS accounts; enable Malware Protection for S3 to automatically scan newly uploaded objects for threats |
-| ECR | Container image registry | Required for storing Docker images used by ECS Fargate |
+| ECR | Container image registry | Required for storing Docker images used by ECS Fargate or EKS |
 | Lambda | Serverless compute | Preferred for cloud-native event-driven workloads, scheduled tasks, and lightweight APIs; used with API Gateway for request routing and authorisation |
 | API Gateway | API management | Approved for securing, routing, and throttling API requests to Lambda and other backends |
-| EC2 | Virtual machines | Approved for VM-based migration to AWS (lift-and-shift); not for greenfield workloads — use ECS Fargate or Lambda instead |
+| EC2 | Virtual machines | Approved for VM-based migration to AWS (lift-and-shift); not for greenfield workloads — use ECS Fargate, EKS, or Lambda instead |
 | Route 53 | DNS management | Managed DNS for domain routing, health checks, and failover |
+
+### Approved Third-Party / Non-AWS Services
+
+AWS-native tooling (WAF, CloudFront, Route 53) remains the **default** choice for edge protection
+and multi-region failover. F5 Distributed Cloud is approved as a team-driven alternative, not a
+default — teams choose per the criteria below rather than defaulting to it automatically.
+
+| Service | Use Case | Rationale |
+|---------|----------|-----------|
+| F5 Distributed Cloud | WAF SaaS edge protection and multi-region load balancing/failover (see `.claude/patterns/markdown/external-b2b-saas-eks.md`) | Optional alternative to AWS-native WAF + CloudFront/Route 53 failover. Decision is team-driven based on: (1) **availability** — whether F5 Distributed Cloud is already provisioned for the team's target region(s); if not set up in a given region, use AWS-native tooling instead; (2) **workload maturity** — for POC/early-stage work, prefer AWS-native to avoid an external dependency and its SLA-bound provisioning lead time from the team owning F5 Distributed Cloud; adopt F5 Distributed Cloud once the workload becomes a permanent/production concern, or to stay consistent with an existing F5-based integration. |
 
 ### Forbidden AWS Services / Patterns
 
@@ -188,7 +221,6 @@ PostgreSQL remains the **default data store** for all relational and complex-sch
 |-------------------|--------|
 | Hardcoded AWS credentials | Use IAM roles; credentials in code are a critical security violation |
 | Public S3 buckets | All buckets must be private; CloudFront for public asset delivery |
-| EKS | Requires separate Platform Engineering approval and support agreement |
 
 ---
 
@@ -288,7 +320,7 @@ PostgreSQL remains the **default data store** for all relational and complex-sch
 | Area | Approved Approach | Rationale |
 |------|------------------|-----------|
 | Authentication | Spring Security + OAuth2/OIDC | Enterprise standard; authenticate via Cognito or Okta tokens |
-| Identity — external (B2C) | AWS Cognito | Customer-facing apps; handles registration, login, password storage, MFA; AWS-native, free tier up to 50K MAU |
+| Identity — external (B2C) | Okta | Customer-facing apps; enterprise SSO, centralised access policies; free Developer Edition (100 MAU) available for PoC |
 | Identity — internal (workforce) | Okta | Internal/employee-facing apps; enterprise SSO, Active Directory integration, centralised access policies; free Developer Edition (100 MAU) available for PoC |
 | Auth pattern — user flows | OAuth2 Authorization Code Flow | For user-facing apps (browser-based); user authenticates via Cognito or Okta, app receives JWT tokens |
 | Auth pattern — service-to-service | OAuth2 Client Credentials Flow | For machine-to-machine API calls; no user involved; service authenticates directly with Cognito or Okta to obtain an access token |

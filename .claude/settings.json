@@ -1,35 +1,27 @@
 {
-  "env": {
-    "JAVA_HOME": "/usr/lib/jvm/java-21",
-    "MAVEN_OPTS": "-Xmx1g"
-  },
-  "permissions": {
-    "allow": [
-      "Bash(mvn:*)",
-      "Bash(npm:*)",
-      "Bash(docker:*)",
-      "Bash(git:*)",
-      "Bash(terraform:*)",
-      "Bash(flyway:*)",
-      "Read(**)",
-      "Edit(backend/src/**)",
-      "Edit(frontend/src/**)",
-      "Edit(infra/**)",
-      "Edit(docs/**)",
-      "Edit(.claude/**)",
-      "Bash(Remove-Item -Recurse -Force \"c:\\\\ent_apps\\\\git\\\\my-first-app\\\\docs\\\\requirements\")",
-      "Bash(rm -r \"c:/ent_apps/git/my-first-app/docs/requirements\")",
-      "Edit(/.claude/skills/requirements-capture/**)",
-      "Edit(/.claude/skills/hld-architecture/**)"
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/check-secrets.sh", "timeout": 15 },
+          { "type": "command", "command": "bash .claude/hooks/check-approved-catalog.sh", "timeout": 15 }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/flyway-immutable.sh", "timeout": 15 }
+        ]
+      }
     ],
-    "deny": [
-      "Bash(rm -rf *)",
-      "Bash(curl * | bash)",
-      "Bash(wget * | sh)",
-      "Edit(backend/src/main/resources/application-prod.yml)",
-      "Edit(.env*)",
-      "Edit(secrets/**)"
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/check-boundary-imports.sh", "timeout": 15 }
+        ]
+      }
     ]
-  },
-  "model": "claude-opus-4-6"
+  }
 }

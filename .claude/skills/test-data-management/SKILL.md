@@ -127,7 +127,7 @@ for i in $(seq 1 $COUNT); do
     -H "Content-Type: application/json" \
     -d "{\"email\":\"perf-user-$i@test.com\",\"role\":\"USER\"}" > /dev/null
 done
-echo "Done. Run: mvn jmeter:jmeter"
+echo "Done. Run: ./gradlew jmRun"
 ```
 
 ---

@@ -7,10 +7,11 @@ A comprehensive Claude Code harness that codifies enterprise software delivery p
 | Category | Count | Description |
 |----------|-------|-------------|
 | Agents | 9 | Specialised AI roles covering every SDLC function |
-| Skills | 13 | Detailed workflow modules with templates and checklists |
-| Commands | 8 | Slash commands for common delivery workflows |
-| Rules | 6 | Coding standards and architecture constraints |
-| Hooks | 4 | Pre-tool-use validation gates |
+| Skills | 15 | Detailed workflow modules with templates and checklists |
+| Commands | 9 | Slash commands for common delivery workflows |
+| Rules | 7 | Coding standards and architecture constraints |
+| Hooks | 4 | Pre/post-tool-use validation gates |
+| Patterns | 1 | Reusable cloud architecture reference patterns |
 
 ## Getting Started
 
@@ -27,6 +28,8 @@ cd sdlc-plus
 ```
 
 Open the project in your IDE or start Claude Code in the terminal. The harness configuration in `.claude/` is automatically loaded.
+
+If this `.claude/` folder was copied into a different project (rather than cloned as this repo), run `/init-project` first — it bootstraps the required `docs/` structure, generates `CLAUDE.md`, wires up the hooks in `.claude/settings.json`, and sets up `.gitignore`. It's idempotent, so it's safe to re-run any time you pull in a newer copy of `.claude/`.
 
 ### Quick Start
 
@@ -54,6 +57,7 @@ Slash commands that orchestrate multi-agent workflows.
 
 | Command | Description |
 |---------|-------------|
+| `/init-project` | Bootstrap a project that received `.claude/` by copy: settings, `.gitignore`, `CLAUDE.md`, required `docs/` structure |
 | `/new-feature` | Full feature lifecycle: requirements, HLD, LLD, code, tests, docs, governance |
 | `/review` | Code review against project standards, LLD, and security checklist |
 | `/release-gate` | Release governance checklist: DoD, defects, change requests, security scans |
@@ -69,6 +73,7 @@ Deep workflow modules loaded by agents. Each contains step-by-step instructions,
 
 | Skill | Purpose |
 |-------|---------|
+| `init-sdlc` | Bootstraps a project that received `.claude/` by copy: docs/ structure, `CLAUDE.md`, settings, `.gitignore` |
 | `approved-catalog` | Enterprise technology whitelist and forbidden list with rationale |
 | `requirements-capture` | Epic/story creation, acceptance criteria, MoSCoW prioritisation |
 | `hld-architecture` | System design, component diagrams (Mermaid), ADR creation |
@@ -82,6 +87,7 @@ Deep workflow modules loaded by agents. Each contains step-by-step instructions,
 | `performance-testing` | JMeter test plan design, throughput/latency analysis, baseline comparison |
 | `governance` | Change requests, risk register, DPIAs, security reviews, DoD checklist |
 | `documentation` | API docs, user guides, runbooks, CHANGELOG maintenance |
+| `md-to-pdf` | Converts any repo Markdown file to a self-contained PDF (images embedded as base64) |
 
 ## Rules
 
@@ -95,17 +101,34 @@ Coding standards and architecture constraints enforced across all agents.
 | `sql.md` | Flyway naming conventions, immutable migrations, index and timestamp standards |
 | `docs.md` | Document headers, Mermaid diagrams, traceability, markdown formatting |
 | `claude-md.md` | CLAUDE.md maintenance: when and how to update the project manifest |
+| `memory-to-rules.md` | When guidance should be escalated into rules/skills/agents instead of saved to personal memory |
 
 ## Hooks
 
-Pre-tool-use validation scripts that run automatically before file edits.
+Validation scripts wired into `.claude/settings.json`. Three run `PreToolUse` (before the
+edit lands); one runs `PostToolUse` (after the file is written, reading it back to check
+for violations).
 
-| Hook | Gate |
-|------|------|
-| `check-approved-catalog.sh` | Blocks forbidden dependencies (MongoDB, MySQL, jQuery, Cypress, etc.) |
-| `check-boundary-imports.sh` | Enforces backend/frontend independence — no cross-module imports |
-| `check-secrets.sh` | Scans edits for hardcoded passwords, API keys, and secrets |
-| `flyway-immutable.sh` | Blocks modifications to existing Flyway migration files |
+| Hook | Event | Gate |
+|------|-------|------|
+| `check-secrets.sh` | PreToolUse | Scans edits for hardcoded passwords, API keys, and secrets |
+| `check-approved-catalog.sh` | PreToolUse | Blocks forbidden dependencies (MongoDB, MySQL, jQuery, Cypress, etc.) |
+| `flyway-immutable.sh` | PreToolUse | Blocks modifications to existing Flyway migration files |
+| `check-boundary-imports.sh` | PostToolUse | Enforces backend/frontend independence — no cross-module imports |
+
+## Patterns
+
+Reusable cloud application reference architectures that the `solution-architect` agent
+and `hld-architecture` skill consult when producing an HLD, rather than designing
+infrastructure topology and auth flow from scratch each time. Kept inside `.claude/`
+(not `docs/`) because they're shared template material that travels with the harness
+copy, not project-specific output — see `.claude/skills/init-sdlc/SKILL.md` for how a
+missing or empty patterns directory is treated as a template-integrity gap.
+
+| Location | Contents |
+|----------|----------|
+| `.claude/patterns/markdown/` | One markdown doc per pattern, e.g. `external-b2b-saas-eks.md` — B2B/SaaS external integration, OKTA-secured, on EKS |
+| `.claude/patterns/images/` | Architecture diagrams (PNG) referenced by the markdown docs |
 
 ## Approved Technology Stack
 
@@ -127,7 +150,7 @@ When features are developed, the harness creates this layout:
 
 ```
 sdlc-plus/
-├── .claude/                    # Harness configuration (agents, skills, commands, rules, hooks)
+├── .claude/                    # Harness configuration (agents, skills, commands, rules, hooks, patterns)
 ├── docs/
 │   ├── requirements/           # Epics, user stories, traceability matrix
 │   ├── architecture/           # HLDs and ADRs
@@ -194,6 +217,10 @@ Create `.claude/skills/my-skill/SKILL.md` with the workflow instructions, templa
 ### Add a Hook
 
 Create a shell script in `.claude/hooks/` and register it in `.claude/settings.json` under the appropriate tool event.
+
+### Add a Pattern
+
+Add a markdown file to `.claude/patterns/markdown/` describing the reference architecture (overview, walkthrough, when to use it) and any diagrams to `.claude/patterns/images/`. `solution-architect` scans this directory during HLD work, so a new pattern becomes available immediately without any agent changes.
 
 ## License
 

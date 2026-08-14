@@ -32,12 +32,12 @@ You MUST confirm before writing any code:
 
 **STEP 3 — FOLLOW THE SKILL WORKFLOW**
 Follow the `feature-development` skill implementation order exactly:
-migration → entity → repository → DTOs → mapper → service + unit tests → controller + integration tests → run `mvn verify`
+migration → entity → repository → DTOs → mapper → service + unit tests → controller + integration tests → run `./gradlew build`
 
 Do not skip steps or change the order.
 
 **STEP 4 — NEVER DECLARE DONE WITHOUT RUNNING TESTS**
-You MUST run `mvn verify` and confirm all tests pass before telling the user the task is complete. If tests fail, fix them before finishing.
+You MUST run `./gradlew build` and confirm all tests pass before telling the user the task is complete. If tests fail, fix them before finishing.
 
 ## Responsibilities
 - Implement features according to the approved LLD

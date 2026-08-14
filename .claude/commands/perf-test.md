@@ -14,7 +14,7 @@ Use the `qa-engineer` agent with the `performance-testing` skill to:
 3. Create the JMeter test plan at `backend/src/test/jmeter/plans/{feature}-load-test.jmx`
 4. Configure thread groups for: smoke (5 users), load (50 users), stress (200 users)
 5. Add response assertions and duration assertions matching the performance targets
-6. Run the smoke test first: `cd backend && mvn jmeter:jmeter -DTHREAD_COUNT=5 -DDURATION_SECONDS=60`
+6. Run the smoke test first: `cd backend && ./gradlew jmRun -PTHREAD_COUNT=5 -PDURATION_SECONDS=60`
 7. If smoke passes, run the full load test
 8. Save results to `/docs/testing/performance/PB-{feature}.md`
 

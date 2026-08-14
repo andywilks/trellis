@@ -42,35 +42,34 @@ backend/src/test/jmeter/
 
 ---
 
-## Maven JMeter Plugin Configuration
+## Gradle JMeter Plugin Configuration
 
-Add to `backend/pom.xml`:
+Add to `backend/build.gradle.kts` (confirm the exact plugin version against the
+approved-catalog before pinning it — e.g. `net.foragerr.jmeter.gradle`, a
+community-maintained Gradle JMeter plugin):
 
-```xml
-<plugin>
-  <groupId>com.lazerycode.jmeter</groupId>
-  <artifactId>jmeter-maven-plugin</artifactId>
-  <version>3.8.0</version>
-  <configuration>
-    <testFilesDirectory>${project.basedir}/src/test/jmeter/plans</testFilesDirectory>
-    <resultsDirectory>${project.basedir}/src/test/jmeter/results</resultsDirectory>
-    <generateReports>true</generateReports>
-    <reportDirectory>${project.basedir}/src/test/jmeter/reports</reportDirectory>
-    <propertiesUser>
-      <TARGET_HOST>localhost</TARGET_HOST>
-      <TARGET_PORT>8080</TARGET_PORT>
-      <THREAD_COUNT>50</THREAD_COUNT>
-      <RAMP_UP_SECONDS>30</RAMP_UP_SECONDS>
-      <DURATION_SECONDS>300</DURATION_SECONDS>
-    </propertiesUser>
-  </configuration>
-</plugin>
+```kotlin
+plugins {
+    id("net.foragerr.jmeter") version "1.x" // confirm latest approved version
+}
+
+jmeter {
+    testFilesDir = file("src/test/jmeter/plans")
+    resultsDir = file("src/test/jmeter/results")
+    reportDir = file("src/test/jmeter/reports")
+    jmUserProperties = mapOf(
+        "TARGET_HOST" to "localhost",
+        "TARGET_PORT" to "8080",
+        "THREAD_COUNT" to "50",
+        "RAMP_UP_SECONDS" to "30",
+        "DURATION_SECONDS" to "300"
+    )
+}
 ```
 
 Run with:
 ```bash
-cd backend && mvn jmeter:jmeter
-cd backend && mvn jmeter:results    # generate HTML report
+cd backend && ./gradlew jmRun    # runs the plan and generates the HTML report
 ```
 
 ---
@@ -162,7 +161,7 @@ performance-test:
   if: github.ref == 'refs/heads/main'
   steps:
     - name: Run JMeter smoke test
-      run: cd backend && mvn jmeter:jmeter -DTHREAD_COUNT=5 -DDURATION_SECONDS=60
+      run: cd backend && ./gradlew jmRun -PTHREAD_COUNT=5 -PDURATION_SECONDS=60
     - name: Upload results
       uses: actions/upload-artifact@v4
       with:

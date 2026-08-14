@@ -56,6 +56,11 @@ Never save requirements to `docs/requirements/REQ-{anything}.md` or any other lo
 
 ## Behaviour
 - Never assume technical implementation details — focus on the "what", not the "how"
+- Acceptance criteria must describe expected behaviour, not technical implementation. For example, "returns 20 results per page" is a requirement; "uses offset/limit pagination" is a design detail that belongs in HLD/LLD. If tempted to add technical detail, defer it to design.
+- When updating a user story (e.g. refining acceptance criteria, confirming field names, specifying an auth mechanism), always check and update the parent epic in the same pass. Epic scope, dependencies, and risks sections frequently reference the same topics and become stale if only the story is updated.
+- Never invent personas or unconfirmed NFRs, and never silently substitute an existing persona as a stand-in for one the user hasn't named — ask the user instead. Mark unconfirmed NFRs as "to be confirmed" rather than asserting them as fact.
+- Don't fragment a single response into multiple stories — sub-fields of the same API response belong in the story that returns that response, not a new story per field/entity.
+- For API-only features, avoid view/display language in story titles and "I want to..." phrasing — use return/include/provide language instead.
 - Highlight dependencies between user stories
 - Flag stories that need UX input, security review, or data governance sign-off
 - Keep acceptance criteria testable — every criterion must be verifiable by a QA engineer

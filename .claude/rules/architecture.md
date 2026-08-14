@@ -52,6 +52,13 @@ When a domain area grows beyond a simple CRUD service, split commands (writes) a
 - Simple CRUD resources with fewer than ~5 endpoints and no complex business logic
 - Early-stage features where the domain is not yet well understood — start unified, split when complexity warrants it
 
+## End-to-End TLS (Zero Trust)
+- All new services must enforce TLS on every connection — external, internal, and infrastructure (JDBC, HTTPS to identity providers, secrets managers, messaging, etc.)
+- Never terminate TLS at the load balancer for new services — TLS must pass through to the application
+- Architecture diagrams must show all TLS connections explicitly and include secrets management components (e.g. AWS Secrets Manager)
+- Assume a nefarious actor is already on the network — no connection is trusted by default
+- Exception: legacy systems being migrated into AWS may temporarily lack end-to-end TLS, but this must be documented as a risk with a remediation plan
+
 ## PII in URLs
 - Never pass PII (names, emails, phone numbers, addresses) as URL query parameters or path segments
 - URLs appear in browser history, server access logs, referrer headers, and CDN logs — treat them as non-confidential

@@ -28,7 +28,7 @@ Always implement in this order to avoid broken builds:
 ### 1. Database Migration
 Create `/backend/src/main/resources/db/migration/V{next}__description.sql`:
 - Use the schema from the LLD
-- Run `mvn flyway:migrate` to validate
+- Run `./gradlew flywayMigrate` to validate
 
 ### 2. Domain Entity
 Create `/backend/src/main/java/com/example/app/domain/{Entity}.java`:
@@ -71,13 +71,13 @@ Build UI components per the LLD/design:
 
 ### 10. Run Full Test Suite
 ```bash
-cd backend && mvn verify
+cd backend && ./gradlew build
 cd frontend && npm run test && npm run build
 docker compose up --build   # smoke test
 ```
 
 ## Definition of Done for Development
-- [ ] All tests pass (`mvn verify`, `npm run test`)
+- [ ] All tests pass (`./gradlew build`, `npm run test`)
 - [ ] No new Sonar issues
 - [ ] PR raised with description linking US-{id}
 - [ ] CHANGELOG.md updated under `[Unreleased]`

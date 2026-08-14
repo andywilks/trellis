@@ -5,7 +5,7 @@ Agents and skills MUST update CLAUDE.md as part of the same commit when any of t
 
 ### Stack Section
 - A technology, library, framework, or database is selected via the approved-catalog skill
-- A dependency is added to `pom.xml`, `package.json`, or any build manifest
+- A dependency is added to `build.gradle.kts`, `package.json`, or any build manifest
 - Format: `- {Technology} — {what it is used for}`
 
 ### Repository Layout Section

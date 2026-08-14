@@ -49,7 +49,7 @@ Create `/docs/requirements/epics/EP-{id}-{slug}.md`:
 ```markdown
 # EP-{id}: {Epic Title}
 **Priority:** Must / Should / Could / Won't
-**Status:** Draft | Reviewed | Approved
+**Status:** Draft | In Review | Reviewed | Approved
 
 ## Goal
 One sentence describing the business outcome.
@@ -81,7 +81,7 @@ Create `/docs/requirements/stories/US-{id}-{slug}.md`:
 # US-{id}: {Story Title}
 **Epic:** EP-{id}
 **Priority:** Must / Should / Could / Won't
-**Status:** Draft | Reviewed | Approved
+**Status:** Draft | In Review | Reviewed | Approved
 **Points:** {story points}
 
 ## User Story
@@ -104,6 +104,25 @@ Scenario: {scenario title}
 ## Out of Scope
 - ...
 ```
+
+## Requirements Principles
+
+### Focus on the "what", not the "how"
+Acceptance criteria must describe expected behaviour, not technical implementation. For example, "returns 20 results per page" is a requirement; "uses offset/limit pagination" is a design detail that belongs in HLD/LLD. If tempted to add technical detail, defer it to design.
+
+### Keep epics and stories consistent
+When updating a user story (e.g. refining acceptance criteria, confirming field names, specifying an auth mechanism), always check and update the parent epic in the same pass. Epic scope, dependencies, and risks sections frequently reference the same topics and become stale if only the story is updated.
+
+### Ground everything in what was actually said
+- Never invent a persona/actor not named by the user, and never silently substitute the closest established actor as a stand-in. If a story needs an actor the user hasn't specified, stop and ask the user who that actor is — don't default to a generic role like "system operator" or "admin", and don't assume an existing persona (e.g. "claim handler") fits without confirming.
+- Never state an unconfirmed operational parameter (SLAs, availability windows, hours of operation, etc.) as a settled NFR. If it's not been given, write "To be confirmed — not yet specified by stakeholders" rather than asserting a plausible-sounding default.
+- When a stakeholder gives example data to illustrate a *category* (e.g. "names, addresses, phone numbers" as examples of personal data), do not promote those examples into confirmed field names or acceptance-criteria scenarios. Keep them as illustrative examples in Design Notes, marked "to be confirmed", until the stakeholder confirms the actual fields/keys.
+
+### One story per capability, not per response field
+Don't split a single API response into a story per section or entity (e.g. a separate story for "broker details" or "contact details" that are just fields on an existing retrieval response). A new story is warranted only when it represents an independently valuable, independently testable capability — not a subset of fields already covered by an existing story's response. Default to keeping related fields inside the story that owns the response; describe them via an example response structure in that story's Design Notes.
+
+### No presentation language for API-only features
+If Step 1, Q7 confirms the feature is API-only (no UI), avoid "view", "see", "display" in story titles and the "I want to..." clause — these imply a presentation layer that isn't being built. Use "return", "include", "provide" instead, reflecting what the API response contains. Verifying this behaviour is part of the story that implements the underlying search/retrieval capability — it does not need its own story.
 
 ## Step 5 — Update Traceability Matrix
 Add a row to `/docs/requirements/traceability-matrix.md`:

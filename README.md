@@ -43,10 +43,6 @@ Open the project in your IDE or start Claude Code in the terminal. The harness c
 
 If this `.claude/` folder was copied into a different project (rather than cloned as this repo), run `/init-sdlc` first — it bootstraps the required `docs/` structure, generates `CLAUDE.md`, wires up the hooks in `.claude/settings.json`, and sets up `.gitignore`. It's idempotent, so it's safe to re-run any time you pull in a newer copy of `.claude/`.
 
-### Quick Start
-
-Run `/new-feature US-001 User registration` to kick off a full feature lifecycle — requirements, architecture, design, implementation, testing, documentation, and governance — all orchestrated by the appropriate agents.
-
 ## Agents
 
 Each agent is a specialised role with scoped tool access and domain expertise.

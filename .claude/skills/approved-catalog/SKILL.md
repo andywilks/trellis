@@ -213,7 +213,7 @@ default — teams choose per the criteria below rather than defaulting to it aut
 
 | Service | Use Case | Rationale |
 |---------|----------|-----------|
-| F5 Distributed Cloud | WAF SaaS edge protection and multi-region load balancing/failover (see `.claude/patterns/markdown/external-b2b-saas-eks.md`) | Optional alternative to AWS-native WAF + CloudFront/Route 53 failover. Decision is team-driven based on: (1) **availability** — whether F5 Distributed Cloud is already provisioned for the team's target region(s); if not set up in a given region, use AWS-native tooling instead; (2) **workload maturity** — for POC/early-stage work, prefer AWS-native to avoid an external dependency and its SLA-bound provisioning lead time from the team owning F5 Distributed Cloud; adopt F5 Distributed Cloud once the workload becomes a permanent/production concern, or to stay consistent with an existing F5-based integration. |
+| F5 Distributed Cloud | WAF SaaS edge protection and multi-region load balancing/failover (see `.claude/patterns/markdown/aws-api-architecture.md`) | Optional alternative to AWS-native WAF + CloudFront/Route 53 failover. Decision is team-driven based on: (1) **availability** — whether F5 Distributed Cloud is already provisioned for the team's target region(s); if not set up in a given region, use AWS-native tooling instead; (2) **workload maturity** — for POC/early-stage work, prefer AWS-native to avoid an external dependency and its SLA-bound provisioning lead time from the team owning F5 Distributed Cloud; adopt F5 Distributed Cloud once the workload becomes a permanent/production concern, or to stay consistent with an existing F5-based integration. |
 
 ### Forbidden AWS Services / Patterns
 

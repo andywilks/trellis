@@ -1,4 +1,4 @@
-# sdlc-plus
+# trellis
 
 A comprehensive Claude Code harness that codifies enterprise software delivery processes into structured agents, skills, commands, rules, and validation hooks. It provides a complete SDLC framework covering requirements capture through to release governance, designed for teams building Java/Spring Boot + React applications on AWS.
 

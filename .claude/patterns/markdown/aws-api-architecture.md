@@ -146,9 +146,6 @@ Three deployment options are available for spreading the pattern across regions.
 
 ![Option A – Route 53 failover](../images/external-failover-route53.png)
 
-> **Source file:** `.claude/patterns/diagrams/external-failover-route53.drawio` (editable draw.io
-> source) — open in [diagrams.net](https://app.diagrams.net) to edit and re-export the PNG above
-
 A Public Route 53 health-check monitor manages failover from the primary to the secondary region.
 F5 Distributed Cloud has a TTL of 5 minutes and Route 53 has a TTL of 1 minute, allowing timely
 — but not immediate — failover to the secondary region.
@@ -159,10 +156,6 @@ F5 Distributed Cloud has a TTL of 5 minutes and Route 53 has a TTL of 1 minute, 
 
 ![Option B – CloudFront + Lambda@Edge failover](../images/external-failover-cloudfront.png)
 
-> **Source file:** `.claude/patterns/diagrams/external-failover-cloudfront.drawio` (editable
-> draw.io source) — open in [diagrams.net](https://app.diagrams.net) to edit and re-export the PNG
-> above
-
 CloudFront and Lambda@Edge perform an immediate failover from the primary to the secondary region
 when the API in the primary region returns specified error codes. The Lambda@Edge function is a
 custom function you write and can easily modify to configure failover behaviour.
@@ -172,9 +165,6 @@ custom function you write and can easily modify to configure failover behaviour.
 ### Option C — Active/Active using F5 to load-balance between regions *(1–5 minute failover)*
 
 ![Option C – F5 Active/Active](../images/external-failover-f5.png)
-
-> **Source file:** `.claude/patterns/diagrams/external-failover-f5.drawio` (editable draw.io
-> source) — open in [diagrams.net](https://app.diagrams.net) to edit and re-export the PNG above
 
 F5 Distributed Cloud load-balances traffic between multiple regions and can route all traffic to a
 single region if failures are detected in one region. Configuration is managed within F5

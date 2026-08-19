@@ -32,16 +32,46 @@ Deeper reference for each category, beyond the summary tables below:
 - [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed and authenticated
 - A terminal or IDE with Claude Code extension (VS Code, JetBrains)
 
-### Setup
+### Option 1: Use this repo as a GitHub template (recommended for new projects)
+
+Click the green **"Use this template"** button at the top of this repo's GitHub page to create your own new repository seeded from this one, then clone *your new repo*:
 
 ```bash
-git clone https://github.com/andywilks/sdlc-plus.git
-cd sdlc-plus
+git clone <your-new-repo-url>
+cd <your-new-repo>
 ```
 
-Open the project in your IDE or start Claude Code in the terminal. The harness configuration in `.claude/` is automatically loaded.
+Open the project in your IDE or start Claude Code in the terminal, then run `/init-sdlc`. It bootstraps the required `docs/` structure, generates `CLAUDE.md`, wires up the hooks in `.claude/settings.json`, and sets up `.gitignore`. It's idempotent, so it's safe to re-run any time you pull in a newer copy of `.claude/`.
 
-If this `.claude/` folder was copied into a different project (rather than cloned as this repo), run `/init-sdlc` first — it bootstraps the required `docs/` structure, generates `CLAUDE.md`, wires up the hooks in `.claude/settings.json`, and sets up `.gitignore`. It's idempotent, so it's safe to re-run any time you pull in a newer copy of `.claude/`.
+> **Note:** Using this repo as a template also brings along its own `README.md` and the
+> five `*-GUIDE.md` files (`AGENTS-GUIDE.md`, `COMMANDS-GUIDE.md`, `HOOKS-GUIDE.md`,
+> `RULES-GUIDE.md`, `SKILLS-GUIDE.md`) — these document the harness itself, not your
+> project. Replace `README.md` with one describing your actual project once you're set
+> up; the guide files are optional reference material, so keep, delete, or relocate them
+> (e.g. into a `docs/` subfolder) as you see fit. None of this affects how the `.claude/`
+> harness functions.
+
+### Option 2: Copy `.claude/` into an existing project
+
+Already have a project? Copy just the `.claude/` folder into it:
+
+```bash
+cp -r .claude /path/to/your-existing-project/
+cd /path/to/your-existing-project
+```
+
+Then run `/init-sdlc` the same way as above — it bootstraps `docs/`, `CLAUDE.md`, `.claude/settings.json` hook wiring, and `.gitignore` without disturbing anything you already have. It's idempotent, so it's safe to re-run any time you pull in a newer copy of `.claude/`.
+
+### Option 3: Clone this repo directly (contributing to the harness itself)
+
+If you want to modify or extend the harness itself — add a new agent, skill, rule, or hook — clone this repo directly:
+
+```bash
+git clone https://github.com/andywilks/trellis.git
+cd trellis
+```
+
+Open the project in your IDE or start Claude Code in the terminal. The harness configuration in `.claude/` is automatically loaded — no `/init-sdlc` needed, since this *is* the harness, not a copy of it.
 
 ## Agents
 
@@ -157,7 +187,7 @@ The `approved-catalog` skill defines the full whitelist. Key technologies:
 When features are developed, the harness creates this layout:
 
 ```
-sdlc-plus/
+your-project/
 ├── .claude/                    # Harness configuration (agents, skills, commands, rules, hooks, patterns)
 ├── docs/
 │   ├── requirements/           # Epics, user stories, traceability matrix

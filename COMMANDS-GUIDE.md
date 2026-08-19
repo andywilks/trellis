@@ -66,7 +66,7 @@ Two commands are structural outliers:
 
 **Invoke:** `/review src/main/java/.../UserController.java` or `/review PR #42`
 
-**What it does:** Checks, in order: correctness against the LLD/acceptance criteria; Java standards (constructor injection, no field `@Autowired`); test coverage; security (OWASP Top 10, no hardcoded secrets); API contract vs. OpenAPI; error handling (`@RestControllerAdvice`); database (new immutable Flyway migration, FK indexes); logging (SLF4J, no PII); documentation (OpenAPI annotations, CHANGELOG).
+**What it does:** Checks, in order: correctness against the LLD/acceptance criteria; Java standards (constructor injection, no field `@Autowired`); test coverage; security (OWASP Top 10, no hardcoded secrets); API contract vs. OpenAPI; error handling (`@RestControllerAdvice`); database (matching `docs/design/db/` DDL script updated for any entity change, FK indexes); logging (SLF4J, no PII); documentation (OpenAPI annotations, CHANGELOG).
 
 **Produces:** A review summary with ✅ Passed / ⚠️ Warnings / ❌ Blockers. Blockers must be resolved before merge.
 
@@ -78,7 +78,7 @@ Two commands are structural outliers:
 
 **Invoke:** `/release-gate v1.2.0`
 
-**What it does:** Uses `governance-lead` to confirm every feature in the release has a passing DoD, verify no open Critical/High defects, check all change requests are approved, confirm the changelog is updated, verify security scan results are clean, and confirm Flyway migrations have been reviewed. Does not proceed if any gate fails — lists blockers clearly.
+**What it does:** Uses `governance-lead` to confirm every feature in the release has a passing DoD, verify no open Critical/High defects, check all change requests are approved, confirm the changelog is updated, verify security scan results are clean, and confirm `docs/design/db/` schema DDL scripts are in sync with the entities they describe. Does not proceed if any gate fails — lists blockers clearly.
 
 **Produces:** `docs/governance/release-approvals/RA-{version}.md`.
 
@@ -102,7 +102,7 @@ Two commands are structural outliers:
 
 **Invoke:** `/write-tests UserService`
 
-**What it does:** Uses `qa-engineer` to read the target source, check existing tests to avoid duplication, identify untested paths (happy path, validation, edge cases, exceptions), write JUnit 5 + Mockito unit tests, Testcontainers integration tests, and Vitest + RTL tests for any frontend files involved, then run the tests and report coverage improvement.
+**What it does:** Uses `qa-engineer` to read the target source, check existing tests to avoid duplication, identify untested paths (happy path, validation, edge cases, exceptions), write JUnit 5 + Mockito unit tests, H2-backed integration tests (Testcontainers only if PostgreSQL-specific behaviour is genuinely involved), and Vitest + RTL tests for any frontend files involved, then run the tests and report coverage improvement.
 
 **Produces:** New test files following `methodName_stateUnderTest_expectedBehaviour` naming; a coverage delta report.
 

@@ -175,7 +175,7 @@ Create `/docs/governance/release-approvals/RA-{version}.md`:
 - [ ] Change requests approved
 
 ## Deployment Checklist
-- [ ] Flyway migrations reviewed
+- [ ] `docs/design/db/` schema DDL scripts reviewed and in sync with entities
 - [ ] Environment variables updated
 - [ ] Runbook reviewed
 - [ ] Rollback plan confirmed

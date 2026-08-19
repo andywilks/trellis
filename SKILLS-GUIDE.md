@@ -42,8 +42,8 @@ Skills are detailed step-by-step workflows with templates that agents load *befo
 | `requirements-capture` | Epic/story creation, acceptance criteria, MoSCoW, domain decomposition | `requirements-analyst` |
 | `hld-architecture` | HLD workflow: patterns, catalog decision points, integration/auth clarification, ADRs | `solution-architect` |
 | `lld-design` | LLD workflow: class/sequence diagrams, OpenAPI spec, DB schema, DTOs | `technical-designer` |
-| `feature-development` | Fixed implementation order: migration → entity → ... → frontend | `backend-developer`, `frontend-developer` |
-| `testing` | Test pyramid targets and code patterns (JUnit, Testcontainers, Vitest, Playwright) | `qa-engineer` |
+| `feature-development` | Fixed implementation order: schema DDL → entity → ... → frontend | `backend-developer`, `frontend-developer` |
+| `testing` | Test pyramid targets and code patterns (JUnit, H2/Testcontainers, Vitest, Playwright) | `qa-engineer` |
 | `test-strategy` | Risk classification matrix, scope-by-risk, entry/exit criteria | `test-architect` |
 | `test-data-management` | Data strategy per test level, factories, PII masking | `qa-engineer` |
 | `exploratory-testing` | 60-minute session charters, SFDPOT heuristics, debrief template | `qa-engineer` |
@@ -146,11 +146,11 @@ Also defines 5 requirements principles worth knowing: focus on "what" not "how";
 **Loaded by:** `backend-developer` and `frontend-developer` (both alongside `approved-catalog`).
 
 **Key workflow (10 steps, in order, "to avoid broken builds"):**
-1. Database migration (`./gradlew flywayMigrate` to validate)
+1. Schema DDL (`docs/design/db/{create|alter}-{feature}-tables.sql`, hand-written, never run)
 2. Domain entity
 3. Repository interface
 4. DTOs (records)
-5. Mapper (MapStruct)
+5. Mapper (MapStruct) — with unit tests written immediately
 6. Service — with unit tests written immediately
 7. Controller — with an integration test
 8. Frontend API service
@@ -171,7 +171,7 @@ Definition of Done for development: all tests pass, no new Sonar issues, PR link
 
 **Loaded by:** `qa-engineer`, when writing or reviewing tests.
 
-**Key content:** A coverage-target table (Unit ≥80%, Integration all service/repo methods, API all paths, E2E critical journeys, Performance p95<200ms@100rps via JMeter); worked code examples for JUnit 5 + Mockito unit tests, Testcontainers integration tests, Vitest + RTL frontend tests, and Playwright E2E tests; the commands to run everything and generate the JaCoCo coverage report.
+**Key content:** A coverage-target table (Unit ≥80%, Integration all service/repo methods, API all paths, E2E critical journeys, Performance p95<200ms@100rps via JMeter); worked code examples for JUnit 5 + Mockito unit tests, H2 (default) integration tests with a note on when Testcontainers is justified instead, Vitest + RTL frontend tests, and Playwright E2E tests; the commands to run everything and generate the JaCoCo coverage report.
 
 **Output:** No fixed document template — this is a code-pattern reference. Test files follow the paths shown in the patterns (e.g. `*ServiceTest.java`, `*ControllerIT.java`, `*.test.tsx`, `e2e/*.spec.ts`).
 
@@ -204,7 +204,7 @@ Definition of Done for development: all tests pass, no new Sonar issues, PR link
 
 **Loaded by:** `qa-engineer`, for test data setup.
 
-**Key content:** 4 principles (tests own their data; no shared mutable state; no real PII; deterministic); a strategy table per test level (unit/integration/API/E2E/performance/manual, each with its cleanup approach); worked examples — a Java factory pattern (`UserFactory.aUser()`), a Flyway repeatable seed migration, a Playwright fixture with setup/teardown, and a JMeter data-seeding bash script; PII masking minimums (email → `masked-{hash}@test.invalid`, name → `Test User`, phone → `+440000000000`) and the requirement to document any PII in the feature's DPIA.
+**Key content:** 4 principles (tests own their data; no shared mutable state; no real PII; deterministic); a strategy table per test level (unit/integration/API/E2E/performance/manual, each with its cleanup approach); worked examples — a Java factory pattern (`UserFactory.aUser()`), a Spring `@Sql`-driven seed script run against H2 (no migration tool), a Playwright fixture with setup/teardown, and a JMeter data-seeding bash script; PII masking minimums (email → `masked-{hash}@test.invalid`, name → `Test User`, phone → `+440000000000`) and the requirement to document any PII in the feature's DPIA.
 
 **Output:** No fixed document template — code/script patterns at the paths shown (e.g. `backend/src/test/java/.../testdata/UserFactory.java`, `scripts/seed-perf-data.sh`).
 

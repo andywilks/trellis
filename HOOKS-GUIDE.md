@@ -29,7 +29,7 @@ All four hooks **fail open**: if `python3` isn't on PATH, the hook is silently s
 |------|-------|---------|------------|--------------------|
 | `check-secrets.sh` | PreToolUse | `Edit\|Write` | New content matches a hardcoded-secret pattern | `ask` |
 | `check-approved-catalog.sh` | PreToolUse | `Edit\|Write` | Editing `build.gradle.kts` / `package.json` / `requirements.txt` | `deny` (forbidden dependency) or `ask` (any dependency change) |
-| `flyway-immutable.sh` | PreToolUse | `Edit` only | Editing an *existing* Flyway migration file | `deny` |
+| `entity-ddl-sync.sh` | PreToolUse | `Edit\|Write` | Editing/creating a JPA entity (`.../domain/*.java`) with no `docs/design/db/` change in the working tree | `ask` |
 | `check-boundary-imports.sh` | PostToolUse | `Write\|Edit` | File under `/backend/` or `/frontend/` references the other side, or `shared/` | `block` |
 
 ---
@@ -64,15 +64,15 @@ All four hooks **fail open**: if `python3` isn't on PATH, the hook is silently s
 
 ---
 
-### `flyway-immutable.sh`
+### `entity-ddl-sync.sh`
 
-**What it inspects:** The `file_path` of an `Edit` call only (Write is unaffected — creating a *new* migration file is fine).
+**What it inspects:** The `file_path` of an `Edit` or `Write` call, plus `git status --porcelain` on `docs/design/db/` in the current working tree.
 
-**Trigger condition:** The path matches `db/migration/V[0-9]+__*.sql` **and** the file already exists on disk.
+**Trigger condition:** The path matches `.../domain/*.java` (a JPA entity, per the standard package structure) **and** `docs/design/db/` has no staged, modified, or untracked changes at the time of the edit.
 
-**What you'll see:** *"Flyway migration scripts are immutable once created. Create a new migration script instead of editing an existing one."*
+**What you'll see:** *"You're editing entity file '\<path\>' but no schema DDL script under docs/design/db/ appears to have been changed in this working tree. If this entity change affects the database schema ... update the matching docs/design/db/{create|alter}-{feature}-tables.sql script by hand in the same change ... If this edit doesn't affect the schema, it's safe to proceed."*
 
-**How to respond:** Never argue with this one — create a new migration (`V{next}__description.sql`) that corrects or extends the schema instead. This matches `.claude/rules/sql.md`.
+**How to respond:** If the entity change adds/removes/renames a column, constraint, or table, update the matching `docs/design/db/{create|alter}-{feature}-tables.sql` script by hand before confirming — this repo has no migration tool and no automated drift-check, per `.claude/rules/sql.md`. If the entity edit doesn't touch the schema (e.g. adding a method, a validation annotation), it's safe to confirm and proceed — this hook can't tell the difference, it only checks whether *a* DDL file changed.
 
 ---
 

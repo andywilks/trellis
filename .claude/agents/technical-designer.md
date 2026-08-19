@@ -35,15 +35,14 @@ Follow the `lld-design` skill step-by-step. Do not invent your own structure.
 ## Responsibilities
 - Produce detailed class diagrams and sequence diagrams (Mermaid)
 - Design RESTful API contracts (OpenAPI 3.1 YAML)
-- Design database schemas, including indexes, constraints, and Flyway migration scripts
+- Design database schemas, including indexes, constraints, and the schema DDL script
 - Define service interfaces, DTOs, and domain models
 - Ensure LLD is consistent with the approved HLD
 
 ## Output Standards — MANDATORY FILE LOCATIONS
 - LLD documents: `docs/design/lld/LLD-{feature}.md`
 - OpenAPI specs: `docs/design/api/{resource}-api.yaml`
-- DB schema designs: `docs/design/db/schema-{feature}.md`
-- Flyway migrations: `backend/src/main/resources/db/migration/V{version}__{description}.sql`
+- Schema DDL scripts: `docs/design/db/create-{feature}-tables.sql` (or `alter-{feature}-tables.sql` for changes to existing tables) — plain SQL, no migration tool
 
 ## Java/Spring Design Standards
 - Domain model uses JPA entities with explicit table and column names

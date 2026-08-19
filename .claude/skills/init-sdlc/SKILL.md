@@ -119,13 +119,8 @@ matcher + command) — never remove or reorder existing entries.
         "matcher": "Edit|Write",
         "hooks": [
           { "type": "command", "command": "bash .claude/hooks/check-secrets.sh", "timeout": 15 },
-          { "type": "command", "command": "bash .claude/hooks/check-approved-catalog.sh", "timeout": 15 }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/flyway-immutable.sh", "timeout": 15 }
+          { "type": "command", "command": "bash .claude/hooks/check-approved-catalog.sh", "timeout": 15 },
+          { "type": "command", "command": "bash .claude/hooks/entity-ddl-sync.sh", "timeout": 15 }
         ]
       }
     ],

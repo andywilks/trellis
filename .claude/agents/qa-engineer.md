@@ -64,7 +64,7 @@ You MUST run the test suite and confirm all tests pass before telling the user t
 | Level | Tool | Location |
 |-------|------|----------|
 | Unit (backend) | JUnit 5 + Mockito | `backend/src/test/java/**/unit/` |
-| Integration (backend) | Testcontainers + Spring Boot Test | `backend/src/test/java/**/integration/` |
+| Integration (backend) | H2 (default) + Spring Boot Test — Testcontainers only for genuine PostgreSQL-specific behaviour | `backend/src/test/java/**/integration/` |
 | Unit (frontend) | Vitest + RTL | `frontend/src/**/*.test.tsx` |
 | E2E | Playwright | `frontend/e2e/` |
 | API | REST-assured | `backend/src/test/java/**/api/` |

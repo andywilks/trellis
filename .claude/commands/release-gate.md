@@ -13,7 +13,7 @@ Use the `governance-lead` agent to:
 3. Check all change requests are approved in `/docs/governance/change-requests/`
 4. Confirm CHANGELOG.md has been updated for this version
 5. Verify security scan results are clean
-6. Confirm all Flyway migrations have been reviewed
+6. Confirm all `docs/design/db/` schema DDL scripts are in sync with the entities they describe
 7. Create the Release Approval document at `/docs/governance/release-approvals/RA-{version}.md`
 
 Do not proceed if any gate fails — list blockers clearly.

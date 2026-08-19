@@ -106,7 +106,7 @@ Coding standards and architecture constraints enforced across all agents.
 | `architecture.md` | Module independence, domain decomposition, CQRS separation, no PII in URLs |
 | `java.md` | Java 21 idioms, constructor injection only, Spring conventions, test naming |
 | `typescript.md` | Strict TypeScript, React Query for data fetching, Tailwind CSS only |
-| `sql.md` | Flyway naming conventions, immutable migrations, index and timestamp standards |
+| `sql.md` | Schema DDL location/naming (`docs/design/db/`), hand-sync with entities, index and timestamp standards |
 | `docs.md` | Document headers, Mermaid diagrams, traceability, markdown formatting |
 | `claude-md.md` | CLAUDE.md maintenance: when and how to update the project manifest |
 | `memory-to-rules.md` | When guidance should be escalated into rules/skills/agents instead of saved to personal memory |
@@ -121,7 +121,7 @@ for violations).
 |------|-------|------|
 | `check-secrets.sh` | PreToolUse | Scans edits for hardcoded passwords, API keys, and secrets |
 | `check-approved-catalog.sh` | PreToolUse | Blocks forbidden dependencies (MongoDB, MySQL, jQuery, Cypress, etc.) |
-| `flyway-immutable.sh` | PreToolUse | Blocks modifications to existing Flyway migration files |
+| `entity-ddl-sync.sh` | PreToolUse | Flags entity edits where the matching `docs/design/db/` DDL script hasn't also been touched |
 | `check-boundary-imports.sh` | PostToolUse | Enforces backend/frontend independence — no cross-module imports |
 
 ## Patterns
@@ -142,13 +142,13 @@ missing or empty patterns directory is treated as a template-integrity gap.
 
 The `approved-catalog` skill defines the full whitelist. Key technologies:
 
-**Backend:** Java 21, Spring Boot 4.x, Spring Data JPA, Spring Security, PostgreSQL, Flyway, Gradle (Kotlin DSL)
+**Backend:** Java 21, Spring Boot 4.x, Spring Data JPA, Spring Security, PostgreSQL, Gradle (Kotlin DSL) — no migration tool; schema DDL is a hand-maintained script under `docs/design/db/`, consumed by a separate CI/CD pipeline outside this repo
 
 **Frontend:** React 18/19, TypeScript 5.x (strict), Vite, Tailwind CSS, React Query, Zustand, React Hook Form + Zod
 
 **Cloud:** AWS — ECS Fargate, RDS, ElastiCache, ALB, S3, CloudFront, SQS/SNS, Secrets Manager, CDK 2.x
 
-**Testing:** JUnit 5, Mockito, Testcontainers, Vitest, React Testing Library, Playwright, JMeter
+**Testing:** JUnit 5, Mockito, H2 (in-memory, default for DB-touching tests), Testcontainers (only for genuine PostgreSQL-specific behaviour), Vitest, React Testing Library, Playwright, JMeter
 
 **Observability:** CloudWatch, Micrometer, Datadog/Dynatrace, OpenSearch
 
@@ -162,7 +162,7 @@ sdlc-plus/
 ├── docs/
 │   ├── requirements/           # Epics, user stories, traceability matrix
 │   ├── architecture/           # HLDs and ADRs
-│   ├── design/                 # LLDs, API specs, database schema
+│   ├── design/                 # LLDs, API specs, database DDL scripts (design/db/)
 │   ├── testing/                # Test plans, cases, strategies, defects, exploratory sessions
 │   ├── governance/             # Change requests, risk register, DPIAs, release approvals
 │   ├── api/                    # OpenAPI specs (neutral contract location)
@@ -170,7 +170,7 @@ sdlc-plus/
 │   └── runbooks/               # Operational runbooks
 ├── backend/
 │   ├── src/main/java/          # Controllers, services, repositories, entities, DTOs, mappers
-│   ├── src/main/resources/     # Config and Flyway migrations
+│   ├── src/main/resources/     # Config only — no migration tool; schema DDL lives in docs/design/db/
 │   └── src/test/java/          # Unit and integration tests
 ├── frontend/
 │   ├── src/                    # Components, pages, hooks, services, store, types

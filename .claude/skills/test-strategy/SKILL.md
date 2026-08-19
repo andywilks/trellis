@@ -62,7 +62,7 @@ Save to `/docs/testing/strategy/TS-{feature}.md`:
 | Level | Tool | Coverage Target | Owner |
 |-------|------|----------------|-------|
 | Unit (backend) | JUnit 5 + Mockito | ≥ 80% line | Dev |
-| Integration | Testcontainers | All service methods | Dev |
+| Integration | H2 (default) | All service methods | Dev |
 | API | REST-assured | All endpoints, happy + error | QA |
 | E2E | Playwright | All AC scenarios | QA |
 | Performance | JMeter | p95 < 200ms @ {load} rps | QA |
@@ -72,7 +72,7 @@ Save to `/docs/testing/strategy/TS-{feature}.md`:
 | Data Type | Source | Cleanup |
 |-----------|--------|---------|
 | Users | Factory class | @AfterEach rollback |
-| Reference data | Flyway test seed | Shared, read-only |
+| Reference data | Spring `@Sql` test seed | Shared, read-only |
 | PII | Masked production clone | Wiped after session |
 
 ## Entry Criteria

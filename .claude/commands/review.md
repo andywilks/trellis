@@ -14,7 +14,7 @@ Check in this order:
 4. **Security** — OWASP Top 10, no hardcoded secrets, input validation present, auth/authz correct
 5. **API contract** — Controller matches OpenAPI spec, correct HTTP verbs and status codes
 6. **Error handling** — Custom exceptions used, `@RestControllerAdvice` handles all error types
-7. **Database** — New Flyway migration created (not modifying existing), indexes on foreign keys
+7. **Database** — Matching `docs/design/db/{create|alter}-{feature}-tables.sql` script updated to reflect any entity change, indexes on foreign keys
 8. **Logging** — SLF4J used, no PII in log messages, appropriate log levels
 9. **Documentation** — OpenAPI annotations present, CHANGELOG updated
 

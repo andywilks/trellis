@@ -134,15 +134,14 @@ graph LR
 **Produces:**
 - LLD: `docs/design/lld/LLD-{feature}.md`
 - OpenAPI spec: `docs/design/api/{resource}-api.yaml`
-- DB schema design: `docs/design/db/schema-{feature}.md`
-- Flyway migration: `backend/src/main/resources/db/migration/V{version}__{description}.sql`
+- Schema DDL script: `docs/design/db/create-{feature}-tables.sql` (or `alter-{feature}-tables.sql` for changes to existing tables) — plain SQL, no migration tool
 
 **What good output looks like:**
 - Checked the HLD exists before starting
 - Confirmed which component boundary it's working within
 - Class names and package structure are consistent with your codebase
 - OpenAPI spec matches your standard response envelope
-- Flyway SQL is correct PostgreSQL
+- DDL script is correct PostgreSQL and matches the LLD's Database Schema section
 - No design decisions are left for the developer to make
 
 **Troubleshooting:**
@@ -158,16 +157,16 @@ graph LR
 
 ### backend-developer
 
-**Role:** Java 21 / Spring Boot 4.1 implementation: controllers, services, repositories, entities, DTOs, security, Flyway migrations.
+**Role:** Java 21 / Spring Boot 4.1 implementation: controllers, services, repositories, entities, DTOs, security, schema DDL scripts.
 
 **Invoke:** `@backend-developer implement [feature] — read the LLD first`
 
 **Needs before it starts:** An approved LLD exists at `docs/design/lld/`.
 
-**Produces:** Code under `backend/src/main/java/com/example/app/` (`config/`, `controller/`, `service/`, `repository/`, `domain/`, `dto/`, `mapper/`, `exception/`, `security/`), unit tests alongside each class, integration tests, Flyway migrations.
+**Produces:** Code under `backend/src/main/java/com/example/app/` (`config/`, `controller/`, `service/`, `repository/`, `domain/`, `dto/`, `mapper/`, `exception/`, `security/`), unit tests alongside each class, integration tests, a synced `docs/design/db/` DDL script.
 
 **What good output looks like:**
-- Followed the implementation order from the skill (migration → entity → repository → DTOs → mapper → service+unit tests → controller+integration tests)
+- Followed the implementation order from the skill (schema DDL → entity → repository → DTOs → mapper+unit tests → service+unit tests → controller+integration tests)
 - Idiomatic Java 21 / Spring Boot 4.1, constructor injection only
 - Unit tests written alongside each class, not missing
 - `./gradlew build` actually passes

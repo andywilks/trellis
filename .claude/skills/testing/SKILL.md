@@ -19,7 +19,7 @@ allowed-tools:
 | Level | Tool | Coverage Target |
 |-------|------|----------------|
 | Unit (backend) | JUnit 5 + Mockito | ≥ 80% line coverage |
-| Integration (backend) | Testcontainers | All service/repo methods |
+| Integration (backend) | H2 (in-memory), default | All service/repo methods |
 | API | REST-assured | All happy + error paths |
 | Unit (frontend) | Vitest + RTL | All components |
 | E2E | Playwright | Critical user journeys |
@@ -73,24 +73,14 @@ class UserServiceTest {
 
 ---
 
-## Backend Integration Test Pattern (Testcontainers)
+## Backend Integration Test Pattern (H2, default)
+
+H2 in-memory is the default for tests that touch a database — no Docker dependency, fast startup. Only switch to Testcontainers when the feature genuinely exercises PostgreSQL-specific behaviour (JSONB, window functions, Postgres-only functions/constraint semantics) that H2's compatibility mode can't faithfully emulate — flag and confirm with the user before adding it, since it changes the test suite's external dependencies.
 
 ```java
 @SpringBootTest
-@AutoConfigureTestDatabase(replace = NONE)
-@Testcontainers
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class UserServiceIT {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16")
-        .withDatabaseName("testdb");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
 
     @Autowired UserService userService;
 
@@ -104,6 +94,8 @@ class UserServiceIT {
     }
 }
 ```
+
+For the Testcontainers exception case, swap in `@Testcontainers` with a `@Container static PostgreSQLContainer<?>` and a `@DynamicPropertySource` wiring its JDBC URL — see `.claude/skills/approved-catalog/SKILL.md` for when this is justified.
 
 ---
 

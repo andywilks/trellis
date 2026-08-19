@@ -22,7 +22,7 @@ Rules are standing constraints auto-loaded into agent context — you never invo
 | `architecture.md` | Project-wide | Module independence, domain decomposition, CQRS separation, end-to-end TLS, no PII in URLs |
 | `java.md` | `backend/src/**/*.java` | Java 21 idioms, constructor injection only, Spring conventions, naming, test naming |
 | `typescript.md` | `frontend/src/**/*.{ts,tsx}` | Strict TypeScript, React Query for data fetching, Tailwind CSS only |
-| `sql.md` | `backend/src/main/resources/db/migration/*.sql` | Flyway naming convention, immutable migrations, index and timestamp standards |
+| `sql.md` | `docs/design/db/*.sql` | Schema DDL location/naming, hand-sync with entities (no migration tool), index and timestamp standards |
 | `docs.md` | `docs/**/*.md` | Document headers, Mermaid diagrams, traceability, markdown formatting |
 | `claude-md.md` | Project-wide | When and how agents must update `CLAUDE.md` |
 | `memory-to-rules.md` | Project-wide | When guidance should be escalated into rules/skills/agents instead of the assistant's personal memory |
@@ -55,7 +55,7 @@ Rules are standing constraints auto-loaded into agent context — you never invo
 - Constructor injection only — `@Autowired` on fields or setters is forbidden.
 - `@Transactional` on service methods only, never controllers or repositories.
 - Naming: `{Resource}Controller`, `{Resource}Service`/`{Resource}ServiceImpl`, `{Resource}Repository`, `{Action}{Resource}Request`/`{Resource}Response`, `{Condition}Exception`.
-- Every service class needs a `{Class}Test.java`; every repository needs a `{Class}IT.java` using Testcontainers. Test names: `methodName_stateUnderTest_expectedBehaviour`.
+- Every class with non-trivial logic (services, mappers, specification/predicate builders, state machines, generators/utilities, the global exception handler) needs a fully-isolated `{Class}Test.java`; every repository needs a `{Class}IT.java` using H2 (in-memory) by default — Testcontainers only for genuine PostgreSQL-specific behaviour. Test names: `methodName_stateUnderTest_expectedBehaviour`.
 
 **Example of what it prevents:** `@Autowired private UserRepository repo;` — this exact anti-pattern is called out by name in the rule.
 
@@ -78,14 +78,15 @@ Rules are standing constraints auto-loaded into agent context — you never invo
 
 ### `sql.md`
 
-**Scope:** `backend/src/main/resources/db/migration/*.sql`.
+**Scope:** `docs/design/db/*.sql`.
 
 **Key constraints:**
-- Never modify an existing migration file — Flyway checksums will break every environment. Create a new migration instead (enforced live by the `flyway-immutable.sh` hook).
-- Naming: `V{4-digit-version}__{description}.sql`.
+- This repo has no migration tool (no Flyway, no Liquibase) — schema DDL scripts are never executed by the application or any tooling in the repo. They exist only to be consumed by a separate CI/CD pipeline step, owned outside the repo, using its own DDL-capable credential.
+- Whoever changes a JPA entity must update the matching DDL script by hand in the same change — there's no automated drift-check between entities and the script (though `entity-ddl-sync.sh` nudges you if you forget).
+- Naming: `create-{feature}-tables.sql` for initial table creation, `alter-{feature}-tables.sql` for subsequent changes. Plain SQL — no migration-tool syntax, versioning, or checksums required.
 - `snake_case` names, mandatory `created_at`/`updated_at` timestamps, `BIGSERIAL` primary keys, explicit `ON DELETE` on foreign keys, indexes on all FKs/WHERE columns/UNIQUE constraints.
 
-**Example of what it prevents:** Editing `V0003__add_email_index_to_users.sql` after it's already been applied — the fix is a new `V0004__...sql` instead.
+**Example of what it prevents:** Changing a JPA entity's columns without updating `docs/design/db/alter-{feature}-tables.sql` in the same change, leaving the hand-maintained DDL silently out of sync with the code.
 
 ---
 

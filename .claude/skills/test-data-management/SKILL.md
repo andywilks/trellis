@@ -26,7 +26,7 @@ allowed-tools:
 | Level | Strategy | Cleanup |
 |-------|----------|---------|
 | Unit | In-memory objects, no DB | None needed |
-| Integration | Testcontainers + factory | `@Transactional` rollback or `@AfterEach` delete |
+| Integration | H2 (default) + factory | `@Transactional` rollback or `@AfterEach` delete |
 | API | Factory via REST or direct DB insert | `@AfterEach` cleanup fixture |
 | E2E (Playwright) | API setup calls before test | API teardown after test |
 | Performance (JMeter) | Pre-seeded dataset, read-mostly | Reset between runs |
@@ -71,19 +71,27 @@ void getUserById_returnsUser() {
 
 ---
 
-## Flyway Test Seed Migration
+## Test Seed Data (Spring `@Sql`)
 
-For shared reference/lookup data needed across all tests:
+No migration tool runs against the test database — seed reference/lookup data directly via Spring's
+`@Sql` test annotation against the H2 in-memory instance instead:
 
 ```sql
--- backend/src/test/resources/db/migration/R__test_seed_data.sql
--- Repeatable migration — runs on every test DB initialisation
+-- backend/src/test/resources/test-seed-data.sql
 -- Reference data only — no user or transactional data
+-- Runs fresh against each test's in-memory H2 instance, so a plain INSERT is safe
 
 INSERT INTO roles (id, name) VALUES
   (1, 'USER'),
-  (2, 'ADMIN')
-ON CONFLICT DO NOTHING;
+  (2, 'ADMIN');
+```
+
+```java
+@SpringBootTest
+@Sql("/test-seed-data.sql")
+class RoleServiceIT {
+    // ...
+}
 ```
 
 ---

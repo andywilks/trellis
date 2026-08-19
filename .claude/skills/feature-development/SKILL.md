@@ -25,10 +25,10 @@ Before writing any code, confirm:
 ## Implementation Order
 Always implement in this order to avoid broken builds:
 
-### 1. Database Migration
-Create `/backend/src/main/resources/db/migration/V{next}__description.sql`:
-- Use the schema from the LLD
-- Run `./gradlew flywayMigrate` to validate
+### 1. Schema DDL
+Update the shared SQL script at `/docs/design/db/{create|alter}-{feature}-tables.sql`:
+- Match the schema from the LLD's Database Schema section
+- Plain SQL — do not run it, and do not add a migration-tool dependency (this repo contains no migration tool; the script is consumed by a separate CI/CD pipeline step owned outside the repo)
 
 ### 2. Domain Entity
 Create `/backend/src/main/java/com/example/app/domain/{Entity}.java`:
@@ -39,6 +39,7 @@ Create `/backend/src/main/java/com/example/app/domain/{Entity}.java`:
 Create `/backend/src/main/java/com/example/app/repository/{Entity}Repository.java`:
 - Extend `JpaRepository<Entity, Long>`
 - Add only the custom query methods defined in the LLD
+- Any custom query/specification-building logic (e.g. `Specification<Entity>` predicate builders) needs its own isolated unit test with mocked `Root`/`CriteriaBuilder`/`CriteriaQuery` — no Spring context, no database
 
 ### 4. DTOs
 Create request/response records in `/backend/src/main/java/com/example/app/dto/`:
@@ -48,6 +49,7 @@ Create request/response records in `/backend/src/main/java/com/example/app/dto/`
 ### 5. Mapper
 Create `/backend/src/main/java/com/example/app/mapper/{Entity}Mapper.java`:
 - MapStruct interface for entity ↔ DTO conversion
+- **Write a unit test immediately** in `backend/src/test/java/.../unit/{Entity}MapperTest.java`
 
 ### 6. Service
 Create `/backend/src/main/java/com/example/app/service/{Entity}Service.java`:
@@ -60,6 +62,7 @@ Create `/backend/src/main/java/com/example/app/controller/{Entity}Controller.jav
 - Thin: validate, delegate, respond
 - OpenAPI annotations (`@Operation`, `@ApiResponse`)
 - **Write integration test** in `backend/src/test/java/.../api/{Entity}ControllerIT.java`
+- The global exception handler (`@RestControllerAdvice`) needs its own dedicated, fully-isolated unit test — no Spring context, no database
 
 ### 8. Frontend API Service
 Create `/frontend/src/services/{entity}Service.ts`:

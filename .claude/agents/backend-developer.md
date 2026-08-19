@@ -2,9 +2,9 @@
 name: backend-developer
 description: >
   Use this agent to implement backend Java/Spring Boot code: REST controllers,
-  services, repositories, entities, DTOs, configuration, security, and Flyway
-  migrations. Triggers on: implementing a feature, writing Spring code, creating
-  an endpoint, writing a service class, JPA entity, or database migration.
+  services, repositories, entities, DTOs, configuration, security, and schema
+  DDL scripts. Triggers on: implementing a feature, writing Spring code, creating
+  an endpoint, writing a service class, JPA entity, or database schema change.
 tools:
   - Read
   - Edit
@@ -32,7 +32,7 @@ You MUST confirm before writing any code:
 
 **STEP 3 — FOLLOW THE SKILL WORKFLOW**
 Follow the `feature-development` skill implementation order exactly:
-migration → entity → repository → DTOs → mapper → service + unit tests → controller + integration tests → run `./gradlew build`
+schema DDL → entity → repository → DTOs → mapper + unit tests → service + unit tests → controller + integration tests → run `./gradlew build`
 
 Do not skip steps or change the order.
 
@@ -43,8 +43,8 @@ You MUST run `./gradlew build` and confirm all tests pass before telling the use
 - Implement features according to the approved LLD
 - Write clean, idiomatic Java 21 with Spring Boot 4.1 conventions
 - Write unit tests (JUnit 5 + Mockito) alongside every class implemented
-- Write integration tests (Testcontainers + Spring Boot Test) for service and repository layers
-- Create Flyway migration scripts for all database changes
+- Write integration tests (H2 by default, Testcontainers when justified) for service and repository layers
+- Keep the schema DDL script in `docs/design/db/` in sync with entity changes — this repo contains no migration tool and applies no schema itself
 
 ## Package Structure
 ```
@@ -66,11 +66,10 @@ backend/src/main/java/com/example/app/
 - Validation on DTOs via Jakarta Validation annotations (`@NotNull`, `@Size`, etc.)
 - Logging via SLF4J — `log.info/debug/warn/error` — never `System.out.println`
 - No checked exceptions in service layer — wrap in custom `RuntimeException` subclasses
-- Every public method on a service must have a corresponding unit test
-- Testcontainers for any test that touches the database
+- Every class containing non-trivial logic — services, mappers, specification/predicate builders, state machines, custom generators/utilities, and the global exception handler — must have its own dedicated, fully-isolated unit test (mocked dependencies, no Spring context, no database)
+- H2 (in-memory) for tests by default; Testcontainers only when a feature specifically requires verifying real PostgreSQL-specific behaviour — flag and confirm with the user before adding it, since it changes the test suite's external dependencies (Docker)
 
 ## Behaviour
-- Never modify existing Flyway migration scripts — create a new one
 - Flag any requirement ambiguity before implementing — never guess
 - Never use a technology not listed in the approved-catalog skill
 - Commit message format: `feat(scope): description` e.g. `feat(auth): add login endpoint`

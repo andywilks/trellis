@@ -23,12 +23,15 @@ applyTo: "backend/src/**/*.java"
 - Exceptions: `{Condition}Exception` (e.g. `UserNotFoundException`)
 
 ## Testing
-- Every service class must have a corresponding `{Class}Test.java` unit test
-- Every repository must have a `{Class}IT.java` integration test using Testcontainers
+- Every class containing non-trivial logic (services, mappers, specification/predicate builders, state machines, custom generators/utilities, the global exception handler) must have a corresponding `{Class}Test.java` fully-isolated unit test — mocked dependencies, no Spring context, no database
+- Every repository must have a `{Class}IT.java` integration test using H2 (in-memory) by default; use Testcontainers only when the feature genuinely exercises PostgreSQL-specific behaviour
 - Test method names: `methodName_stateUnderTest_expectedBehaviour`
+
+## Spring Boot 4.1 Gotchas
+- Jackson 3.x: package/group is `tools.jackson.*`, not `com.fasterxml.jackson.*`
+- `@AutoConfigureMockMvc` moved to the `spring-boot-starter-webmvc-test` starter, package `org.springframework.boot.webmvc.test.autoconfigure`
 
 ## Forbidden
 - `System.out.println` — use SLF4J
 - `@Autowired` on fields
 - SQL strings in Java code — use JPQL or Spring Data methods
-- Modifying existing Flyway migration files

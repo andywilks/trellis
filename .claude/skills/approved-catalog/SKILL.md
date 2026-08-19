@@ -277,7 +277,8 @@ default — teams choose per the criteria below rather than defaulting to it aut
 |------|---------|----------|-----------|
 | JUnit 5 | 5.x (via Spring Boot) | Java unit testing | Standard Java test framework |
 | Mockito | 5.x (via Spring Boot) | Java mocking | Standard mocking library |
-| Testcontainers | 1.19+ | Java integration testing | Approved for all DB/service integration tests |
+| H2 (in-memory) | 2.x | Java integration testing | **Default** for API/service tests that touch a database — fast, no external dependency (no Docker). PostgreSQL-specific correctness for H2-tested features is expected to be validated separately, in non-prod environments, via QA automation (e.g. JMeter-driven runs against a real deployed instance) — not by the repo's own test suite |
+| Testcontainers | 1.19+ | Java integration testing | Approved, but not the default — use only when a feature genuinely exercises PostgreSQL-specific behaviour (JSONB, window functions, Postgres-only functions/constraint semantics) that H2's compatibility mode can't faithfully emulate |
 | Postman + Newman | Latest | Functional API testing | GUI for test creation, Newman CLI for CI execution; import OpenAPI specs to generate test collections |
 | JMeter | 5.6+ | Performance testing | Enterprise performance testing standard |
 | Vitest | 1.x, 2.x, 3.x | TypeScript unit testing | Approved for all frontend unit tests |

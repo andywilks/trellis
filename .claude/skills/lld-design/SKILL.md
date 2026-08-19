@@ -88,8 +88,10 @@ Summarise endpoints; full spec in `/docs/design/api/{resource}-api.yaml`.
 
 ## 5. Database Schema
 
+Deliverable: a plain DDL script at `docs/design/db/create-{feature}-tables.sql` (or `alter-{feature}-tables.sql` for changes to existing tables) — not a Flyway migration file under `backend/src/main/resources/db/migration/`. This repo contains no migration tool; the script is consumed only by a separate CI/CD pipeline step owned outside the repo.
+
 ```sql
--- V2__create_users_table.sql
+-- Script: create-users-tables.sql
 CREATE TABLE users (
     id           BIGSERIAL PRIMARY KEY,
     email        VARCHAR(255) NOT NULL UNIQUE,

@@ -1,19 +1,20 @@
 ---
-applyTo: "backend/src/main/resources/db/migration/*.sql"
+applyTo: "docs/design/db/*.sql"
 ---
 
-# Flyway Migration Rules
+# Schema DDL Rules
 
 ## CRITICAL
-- **Never modify an existing migration file** — Flyway checksums will fail and break all environments
-- If a mistake was made in a migration not yet in production, create a new corrective migration
-- If the migration is already in production, create a new migration to alter the schema
+- This repo contains **no migration tool** (no Flyway, no Liquibase) — schema DDL scripts are never executed by the application or by any tooling in this repo
+- Schema DDL scripts exist only to be consumed by a separate CI/CD pipeline step, owned outside this repo, using its own DDL-capable credential
+- Whoever changes a JPA entity **must update the matching DDL script by hand in the same change** — there is no automated drift-check between entities and the DDL script
 
-## Naming Convention
-`V{version}__{description}.sql`
-- Version: sequential integer, zero-padded to 4 digits (e.g. `V0001`, `V0002`)
-- Description: lowercase, underscores, descriptive (e.g. `create_users_table`)
-- Full example: `V0003__add_email_index_to_users.sql`
+## Location & Naming
+Schema DDL scripts live at `docs/design/db/`:
+- `docs/design/db/create-{feature}-tables.sql` — initial table creation for a feature
+- `docs/design/db/alter-{feature}-tables.sql` — subsequent changes to a feature's tables
+
+Plain SQL — no migration-tool syntax, versioning, or checksums required.
 
 ## SQL Standards
 - All table and column names: lowercase with underscores (`snake_case`)
@@ -22,10 +23,10 @@ applyTo: "backend/src/main/resources/db/migration/*.sql"
 - Primary keys: `BIGSERIAL PRIMARY KEY` (auto-incrementing 64-bit integer)
 - Foreign keys: explicit `REFERENCES` with `ON DELETE` behaviour stated
 - Add indexes for: all foreign keys, all columns used in `WHERE` clauses, all `UNIQUE` constraints
-- Add a comment header to each migration:
+- Add a comment header to each script:
 
 ```sql
--- Migration: V{version}__{description}
+-- Script: create-{feature}-tables.sql
 -- Date: YYYY-MM-DD
--- Description: What this migration does and why
+-- Description: What this script does and why
 ```
